@@ -343,6 +343,8 @@ void sr_handlepacket(struct sr_instance* sr,
   //Determine if ARP
 	
   //if ether_type == 0x0806 (then it is ARP)
+  //if ether_type == ip_protocol_icmp = 0x0001 AND Address = One of the IP addresses here, we check to see if it's an ECHO REQUEST
+	//If Echo Request and Address, we gotta do Echo Return reply to the sender.
   //else not ARP
 	
   //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
@@ -356,6 +358,7 @@ Decrement the TTL by 1, and recompute the packet checksum over the modified head
 Find out which entry in the routing table has the longest prefix match with the destination IP address.
   */
   // if (ETHER_ADDR_LEN 6 >= 64 (assuming it's in bytes)) Then Minimum Length Met
+	//Actually reading more it might just be wanting us to see if the IP packet itself is >=20 bytes, not the whole thing.
   // if (ip_sum == (function to calculate IP Packet Checksum) Then Correct Checksum
   // then do ip_ttl = ip_tt1 - 1, recalculate IP Packet Checksum and store it.
   //if not, check arp cache for address => call the sr_arpcache_lookup, (sr_waitforarp if missing?)
