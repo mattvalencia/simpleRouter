@@ -342,7 +342,14 @@ Find out which entry in the routing table has the longest prefix match with the 
 	// 6 Bytes, 6 Bytes, 2 Bytes
 	//Ether Type = 0x0800 for IPv4 (We only deal with IPv4 right?
 	//Ether Type = 0x0806 for ARP
+	// Info in sr_protocol.h
+	
+	
   //Determine if ARP
+	
+  //if ether_type == 0x0806 (then it is ARP)
+  //else not ARP
+	
   //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
   //if not ARP, 
   //check if address matches router (if so, port unreachable type 3, code 3 error)
