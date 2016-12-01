@@ -1,0 +1,83 @@
+1)
+/*---------------------------------------------------------------------
+ * Method: sr_handle_arpreq(struct sr_instance *sr, 
+ *             struct sr_arpreq *req, struct sr_if *out_iface)
+ * #include: sr_router.h, sr_if.h, 
+
+ * Scope:  Global
+ *
+ * Perform processing for a pending ARP request: do nothing, timeout, or  
+ * or generate an ARP request packet 
+/* TODO: send ICMP host uncreachable to the source address of all    */
+      /* packets waiting on this request                                   */
+ *---------------------------------------------------------------------*/
+
+2)
+/*---------------------------------------------------------------------
+ * Method: sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
+ *             unsigned int len, struct sr_if *src_iface)
+ * Scope:  Local
+ *
+ * Handle an ARP packet that was received by the router
+
+/* TODO: send all packets on the req->packets linked list            */
+ *---------------------------------------------------------------------*/
+
+3)
+/*---------------------------------------------------------------------
+ * Method:
+	void sr_handlepacket(struct sr_instance* sr,
+         uint8_t * packet/* lent */,
+         unsigned int len,
+         char* interface/* lent */)
+
+ * Scope:  Global
+ *
+ * This method is called each time the router receives a packet on the
+ * interface.  The packet buffer, the packet length and the receiving
+ * interface are passed in as parameters. The packet is complete with
+ * ethernet headers.
+ *
+ * Note: Both the packet buffer and the character's memory are handled
+ * by sr_vns_comm.c that means do NOT delete either.  Make a copy of the
+ * packet instead if you intend to keep it around beyond the scope of
+ * the method call.
+
+/* TODO: Handle packets                                                  */
+/*************************************************************************/
+
+
+/*************************************************************************/
+sr_if.h	
+	//Node in the interface list for each router
+	struct sr_if
+
+sr_rt.h	
+	//Node in the routing table
+	struct sr_rt
+
+sr_router.h
+	//Encapsulation of the state for a single virtual router.
+	struct sr_instance
+
+sr_protocol.h
+	struct sr_icmp_hdr
+	struct sr_icmp_t3_hdr
+	struct sr_ip_hdr
+	struct sr_ethernet_hdr
+	enum sr_ip_protocol
+	enum sr_ethertype
+	enum sr_arp_opcode
+	enum sr_arp_hrd_fmt
+	struct sr_arp_hdr
+
+sr_aprcache.h
+	struct sr_packet
+	struct sr_arpentry
+	struct sr_arpreq
+	struct sr_arpcache
+	
+sr_utils.h
+	-checksum, ethernet type, ip protocol, various print methods
+
+/*************************************************************************/

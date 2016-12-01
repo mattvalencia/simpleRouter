@@ -1,0 +1,9 @@
+Files in this directory are assembly files. The sr_solution(D).asm files are the assembly code representation of the binary file 'sr_solution' and the methods are named correctly (unless they were intentionally rearranged). So, if you can read x86, you should be able to figure out how to implement our TODOs.
+
+sr_router.s was created with 'gcc -S sr_router.c'
+	can be used to compare with the following two files
+sr_solution.asm was created with 'objdump sr_solution'
+	I may have left out an option, but this is the assembly code objdump believes to be executed by the binary (start here)
+sr_solutionD.asm was created with 'objdump -D sr_solution'
+	the -D option includes code even if objdump beleives it won't be executed
+	
