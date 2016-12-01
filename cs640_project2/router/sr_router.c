@@ -171,30 +171,50 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
       /* TODO: send ICMP host unreachable to the source address of all     */
       /* packets waiting on this request                                   */
 
-
-
       /*********************************************************************/
+		while (req->packets != NULL)
+		{
+		uint8_t * pkt = malloc(66);
 
-	   //create an IP header and ICMP header?
+		sr_ethernet_hdr_t * hdr1 = pkt;
 
-		//add error code
-		sr_icmp_t3_hdr_t * err_hdr;
-		err_hdr->icmp_type = 3;
-		err_hdr->icmp_code = 1;
-		err_hdr->icmp_sum = 0;
-		err_hdr->next_mtu = 0;
-		err_hdr->unused = 0;
-		err_hdr->data = buf[0:27];
-		icmp_sum = cksum((uint16_t *)err_hdr, 36); //unsure of what len should be
+		/* Populate Ethernet header */
+		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address
+		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
+		hdr1->ether_type = htons(ethertype_ip);
+
+		sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
 
 		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf); //extract source address from IP addr
 		iphdr->ip_dst = iphdr->ip_src;
 
 
-		while (req->packets != NULL)
-		{
-			sr_send_packet(sr, , , iphdr->ip_src);
+		hdr2->ip_tos = 0;			/* Unknonwn what value needed! type of service */
+		hdr2->ip_len = 54;			
+		hdr2->ip_id = 0;			/* identification */
+		hdr2-> ip_off = 0;			/* fragment offset field */
+		hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
+		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
+		hdr2->ip_src = out_iface->ip;
+		hdr2->ip_dst = iphdr->ip_src;	/* source and dest address */
+		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
+
+
+		//add error code
+		sr_icmp_t3_hdr_t * hdr3 = pkt + 30;
+		hdr3->icmp_type = 3;
+		hdr3->icmp_code = 1;
+		hdr3->icmp_sum = 0;
+		hdr3->next_mtu = 0;
+		hdr3->unused = 0;
+		hdr3->data = buf[0:27];
+		icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+
+
+
+		sr_send_packet(sr, pkt, 66, iphdr->ip_src);
 			req->packets = req->packets->next;
+			free(pkt);
 		}
 		
 
@@ -277,12 +297,26 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 	  //req has pointer to packets
 
       /*********************************************************************/
+		sr_ethernet_hdr_t *hdr;
 
-	
 		while (req->packets != NULL)
 		{
-			sr_send_packet(sr, req->packets->buf, req->packets->len, src_iface);
+			int pkt_size = sizeof(sr_ethernet_hdr) + req->packets->len;
+
+		uint8_t *pkt = (uint8_t *)malloc(pkt_size);
+		hdr = pkt;
+		
+	  /* Populate Ethernet header */
+		memset(hdr->ether_dhost, 0xFF, ETHER_ADDR_LEN);
+		memcpy(hdr->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
+		hdr->ether_type = htons(ethertype_ip);
+
+		memcpy(pkt + sizeof(sr_ethernet_hdr), reg->packets, req->packets->len);
+
+			sr_send_packet(sr, hdr, pkt_size, src_iface->addr);
 			req->packets = req->packets->next;
+
+			free(pkt);
 		}
 
 
@@ -331,15 +365,55 @@ void sr_handlepacket(struct sr_instance* sr,
 
   /*************************************************************************/
 
-  //change header fields
-
   //Determine if ARP
-  //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
-  //if not ARP, 
-  //check if address matches router (if so, port unreachable type 3, code 3 error)
-  //if not, check arp cache for address => call the sr_arpcache_lookup
-  //if not found, check requests (automatically adds packet to request list)
+  sr_arp_hdr_t *arphdr = (sr_arp_hdr_t)(packet+sizeof(struct sr_ethernet_hdr);
+  if (arphdr->ar_op == (1 || 2)) 
+	{ sr_handlepacket_arp(sr, packet, len, interface); }
 
+  //if not ARP, 
+
+  else {
+		//change header fields
+		  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t)(packet + sizeof(struct sr_ethernet_hdr);
+		  (unsigned char)(iphdr->ip_ttl)--;
+		  iphdr->ip_sum = cksum(iphdr, 16);
+		  if (iphdr->ip_ttl == 0) { //time exceeded type 11, code 0
+			  send_icmp(sr, packet, len, interface, 11, 0);
+		  }
+		  else{
+
+
+			 //check if address matches router (if UDP/TCP, port unreachable type 3, code 3 error)
+				//if icmp echo, respond
+			  if (iphdr->ip_dst == ) {//how to get own ip address?
+				  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
+				  if (icmphdr->icmp_type == 0)
+					  send_icmp(sr, packet, len, interface, 0, 0);
+				  else
+					  send_icmp(sr, packet, len, interface, 3, 3);
+			  }
+			  else{	//check rt for ip mapping
+				  struct sr_rt temp= sr->routing_table;
+				  bool isEntry = false;
+				  while (temp != null) {
+					  if (temp.dest == iphdr->ip_dst) {
+						  isEntry = true;
+						  break;
+					  }
+					  temp = temp.next;
+				  }
+
+				  //if !isValid Destination Net Unreachable (type 3, code 0) 
+
+
+				  
+				  //if isValid, check arp cache for address => call the sr_arpcache_lookup
+
+				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, iphdr->ip_dst);
+				  //send if found
+				  
+		//if not found, check requests (automatically adds packet to request list)
+  }
 
 }/* end sr_ForwardPacket */
 
