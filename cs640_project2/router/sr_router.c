@@ -168,11 +168,14 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     if (req->times_sent >= 5)
     {
       /*********************************************************************/
-      /* TODO: send ICMP host uncreachable to the source address of all    */
+      /* TODO: send ICMP host unreachable to the source address of all     */
       /* packets waiting on this request                                   */
 
 
+<<<<<<< HEAD
     
+=======
+>>>>>>> 35c5a8239662b03535bf44d90a96c36973563e72
 
       /*********************************************************************/
         //Alex H. (Commented stuff is based off Python, but this is the outline of how to do the above TODO
@@ -181,6 +184,31 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 	//Internet Header + 64 bits of Original Data Datagram.
 	// data = [0:63] bits of data from the Data Packet sent.
 	//Use that Data+header to calc checksum, then make packet again with same data and checksum = calculated checksum.
+
+	   //create an IP header and ICMP header?
+
+		//add error code
+		sr_icmp_t3_hdr_t * err_hdr;
+		err_hdr->icmp_type = 3;
+		err_hdr->icmp_code = 1;
+		err_hdr->icmp_sum = 0;
+		err_hdr->next_mtu = 0;
+		err_hdr->unused = 0;
+		err_hdr->data = buf[0:27];
+		icmp_sum = cksum((uint16_t *)err_hdr, 36); //unsure of what len should be
+
+		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf); //extract source address from IP addr
+		iphdr->ip_dst = iphdr->ip_src;
+
+
+		while (req->packets != NULL)
+		{
+			sr_send_packet(sr, , , iphdr->ip_src);
+			req->packets = req->packets->next;
+		}
+		
+
+
 
       sr_arpreq_destroy(&(sr->cache), req);
     }
@@ -256,9 +284,17 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
       /*********************************************************************/
       /* TODO: send all packets on the req->packets linked list            */
 
-
+	  //req has pointer to packets
 
       /*********************************************************************/
+
+	
+		while (req->packets != NULL)
+		{
+			sr_send_packet(sr, req->packets->buf, req->packets->len, src_iface);
+			req->packets = req->packets->next;
+		}
+
 
       /* Release ARP request entry */
       sr_arpreq_destroy(&(sr->cache), req);
@@ -303,8 +339,38 @@ void sr_handlepacket(struct sr_instance* sr,
   /* TODO: Handle packets                                                  */
 
 
-
   /*************************************************************************/
+
+  //change header fields
+
+	//Dest Mac Addres / Source Mac address / Ether Type
+	// 6 Bytes, 6 Bytes, 2 Bytes
+	//Ether Type = 0x0800 for IPv4 (We only deal with IPv4 right?
+	//Ether Type = 0x0806 for ARP
+	// Info in sr_protocol.h
+	
+	
+  //Determine if ARP
+	
+  //if ether_type == 0x0806 (then it is ARP)
+  //else not ARP
+	
+  //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
+  //if not ARP, 
+  //check if address matches router (if so, port unreachable type 3, code 3 error)
+  // which I think is (if  ether_dhost[ETHER_ADDR_LEN] == router MAC address )	
+  //Else if address doesn't match router but it is an IP Packet...
+	  /*
+Sanity-check the packet (meets minimum length and has correct checksum).
+Decrement the TTL by 1, and recompute the packet checksum over the modified header.
+Find out which entry in the routing table has the longest prefix match with the destination IP address.
+  */
+  // if (ETHER_ADDR_LEN 6 >= 64 (assuming it's in bytes)) Then Minimum Length Met
+  // if (ip_sum == (function to calculate IP Packet Checksum) Then Correct Checksum
+  // then do ip_ttl = ip_tt1 - 1, recalculate IP Packet Checksum and store it.
+  //if not, check arp cache for address => call the sr_arpcache_lookup, (sr_waitforarp if missing?)
+  //if not found, check requests (automatically adds packet to request list)
+
 
 }/* end sr_ForwardPacket */
 
