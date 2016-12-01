@@ -168,13 +168,37 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     if (req->times_sent >= 5)
     {
       /*********************************************************************/
-      /* TODO: send ICMP host uncreachable to the source address of all    */
+      /* TODO: send ICMP host unreachable to the source address of all     */
       /* packets waiting on this request                                   */
 
 
 
-
       /*********************************************************************/
+
+	   //create an IP header and ICMP header?
+
+		//add error code
+		sr_icmp_t3_hdr_t * err_hdr;
+		err_hdr->icmp_type = 3;
+		err_hdr->icmp_code = 1;
+		err_hdr->icmp_sum = 0;
+		err_hdr->next_mtu = 0;
+		err_hdr->unused = 0;
+		err_hdr->data = buf[0:27];
+		icmp_sum = cksum((uint16_t *)err_hdr, 36); //unsure of what len should be
+
+		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf); //extract source address from IP addr
+		iphdr->ip_dst = iphdr->ip_src;
+
+
+		while (req->packets != NULL)
+		{
+			sr_send_packet(sr, , , iphdr->ip_src);
+			req->packets = req->packets->next;
+		}
+		
+
+
 
       sr_arpreq_destroy(&(sr->cache), req);
     }
@@ -250,9 +274,17 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
       /*********************************************************************/
       /* TODO: send all packets on the req->packets linked list            */
 
-
+	  //req has pointer to packets
 
       /*********************************************************************/
+
+	
+		while (req->packets != NULL)
+		{
+			sr_send_packet(sr, req->packets->buf, req->packets->len, src_iface);
+			req->packets = req->packets->next;
+		}
+
 
       /* Release ARP request entry */
       sr_arpreq_destroy(&(sr->cache), req);
@@ -297,8 +329,17 @@ void sr_handlepacket(struct sr_instance* sr,
   /* TODO: Handle packets                                                  */
 
 
-
   /*************************************************************************/
+
+  //change header fields
+
+  //Determine if ARP
+  //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
+  //if not ARP, 
+  //check if address matches router (if so, port unreachable type 3, code 3 error)
+  //if not, check arp cache for address => call the sr_arpcache_lookup
+  //if not found, check requests (automatically adds packet to request list)
+
 
 }/* end sr_ForwardPacket */
 
