@@ -1,4 +1,8 @@
-/* This file defines an ARP cache, which is made of two structures: an ARP
+/*
+
+*File: sr_arpcache.h
+
+* This file defines an ARP cache, which is made of two structures: an ARP
    request queue, and ARP cache entries. The ARP request queue holds data about
    an outgoing ARP cache request and the packets that are waiting on a reply
    to that ARP cache request. The ARP cache entries hold IP->MAC mappings and

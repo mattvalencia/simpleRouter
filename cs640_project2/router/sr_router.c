@@ -178,12 +178,13 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 >>>>>>> 35c5a8239662b03535bf44d90a96c36973563e72
 
       /*********************************************************************/
-        //Alex H. (Commented stuff is based off Python, but this is the outline of how to do the above TODO
+        /* Alex H. (Commented stuff is based off Python, but this is the outline of how to do the above TODO
     //header = struct.pack("!BBHHH", 3, 1, myChecksum, 0, 0)#Make packet header
 	//Calc header with 0 in checksum + data.
 	//Internet Header + 64 bits of Original Data Datagram.
 	// data = [0:63] bits of data from the Data Packet sent.
 	//Use that Data+header to calc checksum, then make packet again with same data and checksum = calculated checksum.
+*/
 
 	   //create an IP header and ICMP header?
 
