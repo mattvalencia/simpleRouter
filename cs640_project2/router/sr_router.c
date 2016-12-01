@@ -333,11 +333,6 @@ void sr_handlepacket(struct sr_instance* sr,
 
   //change header fields
 
-  /*
-Sanity-check the packet (meets minimum length and has correct checksum).
-Decrement the TTL by 1, and recompute the packet checksum over the modified header.
-Find out which entry in the routing table has the longest prefix match with the destination IP address.
-  */
 	//Dest Mac Addres / Source Mac address / Ether Type
 	// 6 Bytes, 6 Bytes, 2 Bytes
 	//Ether Type = 0x0800 for IPv4 (We only deal with IPv4 right?
@@ -353,6 +348,16 @@ Find out which entry in the routing table has the longest prefix match with the 
   //if so call sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt, unsigned int len, struct sr_if *src_iface)
   //if not ARP, 
   //check if address matches router (if so, port unreachable type 3, code 3 error)
+  // which I think is (if  ether_dhost[ETHER_ADDR_LEN] == router MAC address )	
+  //Else if address doesn't match router but it is an IP Packet...
+	  /*
+Sanity-check the packet (meets minimum length and has correct checksum).
+Decrement the TTL by 1, and recompute the packet checksum over the modified header.
+Find out which entry in the routing table has the longest prefix match with the destination IP address.
+  */
+  // if (ETHER_ADDR_LEN 6 >= 64 (assuming it's in bytes)) Then Minimum Length Met
+  // if (ip_sum == (function to calculate IP Packet Checksum) Then Correct Checksum
+  // then do ip_ttl = ip_tt1 - 1, recalculate IP Packet Checksum and store it.
   //if not, check arp cache for address => call the sr_arpcache_lookup, (sr_waitforarp if missing?)
   //if not found, check requests (automatically adds packet to request list)
 
