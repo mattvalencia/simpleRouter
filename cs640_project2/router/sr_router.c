@@ -162,7 +162,9 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
 void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     struct sr_if *out_iface)
 {
-  time_t now = time(NULL);
+
+	uint8_t * pkt = malloc(66);
+	time_t now = time(NULL);
   if (difftime(now, req->sent) >= 1.0)
   {
     if (req->times_sent >= 5)
@@ -172,9 +174,10 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
       /* packets waiting on this request                                   */
 
       /*********************************************************************/
+
+	
 		while (req->packets != NULL)
 		{
-		uint8_t * pkt = malloc(66);
 
 		sr_ethernet_hdr_t *hdr1 = (sr_ethernet_hdr_t *)pkt;
 
@@ -217,7 +220,6 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 			hdr3->data[i] = req->packets->buf[i];
 		}
 
-<<<<<<< HEAD
 		
 		 /*unsure of what len should be*/
 		hdr3->icmp_sum = cksum(hdr3, 28);
@@ -237,14 +239,10 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 	      req->sent = now;
 	      req->times_sent++;
    	 }
-=======
-		sr_send_packet(sr, pkt, 66, iphdr->ip_src);
+		sr_send_packet(sr, pkt, 66, out_iface->name);
 			req->packets = req->packets->next;
 			free(pkt);
-
-		}
-		
-
+	
       sr_arpreq_destroy(&(sr->cache), req);
     }
     else
@@ -256,8 +254,6 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
       req->sent = now;
       req->times_sent++;
     }
->>>>>>> 83c90a6373385af7ae80bbe5d4be8cbcf2550f9b
-  }
 } /* -- sr_handle_arpreq -- */
 
 /*---------------------------------------------------------------------
