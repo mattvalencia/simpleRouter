@@ -364,10 +364,24 @@ void sr_handlepacket(struct sr_instance* sr,
 	/*************************************************************************/
 
 
+	
+	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
+	//(And also is apparently used for checksum calcs too)
+	// Or we can just copy + past ethe length checkers in the other parts of the code and use those instead to check
+	// The ethernet and IP sizes.
+	
+	// I think we can also make our own functions guys, so uh we can make a function to call up
+	// Our interface list from the sr_if structure and then loop through the list to see if any are equal
+	// If == then we know they're for us and we handle them, if not equal we pass em on.
+	
+	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
+	
 	//Determine if ARP
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
+
 			sr_handlepacket_arp(sr, packet, len, interface);
+		
 	}
 	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
 	  //change header fields
@@ -439,6 +453,7 @@ void sr_handlepacket(struct sr_instance* sr,
 			  }
 		  }
 	  }
+  }
 	}
 	else {//if it's neither ARP or IP
 
