@@ -303,15 +303,15 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 		{
 			int pkt_size = sizeof(sr_ethernet_hdr) + req->packets->len;
 
-		uint8_t *pkt = (uint8_t *)malloc(pkt_size);
-		hdr = pkt;
+			uint8_t *pkt = (uint8_t *)malloc(pkt_size);
+			hdr = pkt;
 		
-	  /* Populate Ethernet header */
-		memset(hdr->ether_dhost, 0xFF, ETHER_ADDR_LEN);
-		memcpy(hdr->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
-		hdr->ether_type = htons(ethertype_ip);
+			/* Populate Ethernet header */
+			memset(hdr->ether_dhost, 0xFF, ETHER_ADDR_LEN);
+			memcpy(hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
+			hdr->ether_type = htons(ethertype_ip);
 
-		memcpy(pkt + sizeof(sr_ethernet_hdr), reg->packets, req->packets->len);
+			memcpy(pkt + sizeof(sr_ethernet_hdr), reg->packets, req->packets->len);
 
 			sr_send_packet(sr, hdr, pkt_size, src_iface->addr);
 			req->packets = req->packets->next;
@@ -348,61 +348,64 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
  *---------------------------------------------------------------------*/
 
 void sr_handlepacket(struct sr_instance* sr,
-        uint8_t * packet/* lent */,
-        unsigned int len,
-        char* interface/* lent */)
+	uint8_t * packet/* lent */,
+	unsigned int len,
+	char* interface/* lent */)
 {
-  /* REQUIRES */
-  assert(sr);
-  assert(packet);
-  assert(interface);
+	/* REQUIRES */
+	assert(sr);
+	assert(packet);
+	assert(interface);
 
-  printf("*** -> Received packet of length %d \n",len);
+	printf("*** -> Received packet of length %d \n", len);
 
-  /*************************************************************************/
-  /* TODO: Handle packets                                                  */
+	/*************************************************************************/
+	/* TODO: Handle packets                                                  */
 
 
-  /*************************************************************************/
+	/*************************************************************************/
 
-  /* Is this what justin means? 
-  sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
-  if (ethhdr->ether_dhost == interface) //to check if destination is the router
+	/* Is this what justin means?
+	if (ethhdr->ether_dhost == interface) //to check if destination is the router?
+	  */
 
-  if(ethhdr->ether_type == 0x0806) //to check if ARP
-	*/
-
-  //Determine if ARP
-  sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet+sizeof(struct sr_ethernet_hdr);
-  if (arphdr->ar_op == (1 || 2)) 
-	{ sr_handlepacket_arp(sr, packet, len, interface); }
-
-  //if not ARP, 
-  else {
+	//Determine if ARP
+	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
+	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
+		sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
+		if (arphdr->ar_op == (1 || 2))
+		{
+			sr_handlepacket_arp(sr, packet, len, interface);
+		}
+	}
+	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
 	  //change header fields
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
-	  (unsigned char)(iphdr->ip_ttl)--;
-	  iphdr->ip_sum = cksum(iphdr, 16);
+	  (unsigned char)(iphdr->ip_ttl)--; //decrement TTL
+	  iphdr->ip_sum = cksum(iphdr, 16); //recalculate checksum
 
 	  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
 		  send_icmp(sr, packet, len, interface, 11, 0);
 	  }
 	  else {
 		  //check if address matches router 
-		  if (iphdr->ip_dst == ) //how to get own ip address?
+
+		  struct sr_if * our_interface = (struct sr_if *) interface; //is this 
+		  if (iphdr->ip_dst == our_interface->ip) //how to get our ip address?
 		  {
 			  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
-			  if (icmphdr->icmp_type == 0)								//and if an icmp echo, then respond
+			  if (icmphdr->icmp_type == 0)						//and if an icmp echo, then respond
 			  {
 				  send_icmp(sr, packet, len, interface, 0, 0);
 			  }
 			  else
-			  {															//and if UDP/TCP, then port unreachable => type 3, code 3 error
+			  {												//and if UDP/TCP, then port unreachable => type 3, code 3 error
 				  send_icmp(sr, packet, len, interface, 3, 3);
 			  }
 		  }
-		  else
-		  {	//check router table for ip
+		  else 
+		  {	
+			  //check router table for ip
 			  struct sr_rt temp = sr->routing_table;
 			  bool isEntry = false;
 			  while (temp != null)
@@ -415,7 +418,7 @@ void sr_handlepacket(struct sr_instance* sr,
 				  temp = temp.next;
 			  }
 
-			  // if !isValid => Destination Net Unreachable (type 3, code 0)
+			  // if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)
 			  if (isValid == false)
 			  {
 				  send_icmp(sr, packet, len, interface, 3, 0);
@@ -424,12 +427,12 @@ void sr_handlepacket(struct sr_instance* sr,
 			  {
 				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, iphdr->ip_dst);
 
-				  if (ent != null)
+				  if (ent != null) //if found
 				  {
-					  //send if found
+					  //send 
 				  }
-				  else {
-					  //if not found, check requests (automatically adds packet to request list) ?
+				  else { //if not found
+					  // check requests (automatically adds packet to request list) ? I don't remember what I meant
 
 					  sr_waitforarp(sr, packet, len, ent.ip, interface); 
 				  }
@@ -437,10 +440,12 @@ void sr_handlepacket(struct sr_instance* sr,
 		  }
 	  }
   }
-}/* end sr_ForwardPacket */
+	//else //what do we do when it's neither ARP or IP?
+
+}/* end sr_handlepacket */
 
 
-/*not done
+//*not done
 
 void send_icmp(struct sr_instance* sr,
 	uint8_t * packet, // lent 
@@ -451,9 +456,11 @@ void send_icmp(struct sr_instance* sr,
 	uint8_t * pkt = malloc(66);
 	sr_ethernet_hdr_t * hdr1 = pkt;
 
+	struct sr_if * iface = (struct sr_if *) interface; //Would this be how to get our addr?
+
 	// Populate Ethernet header 
 	memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address?
-	memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);   //how do we know source (our) interface addr?
+	memcpy(hdr1->ether_shost, iface->addr, ETHER_ADDR_LEN);   //how do we know our interface addr?
 	hdr1->ether_type = htons(ethertype_ip);
 
 	sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
@@ -467,7 +474,7 @@ void send_icmp(struct sr_instance* sr,
 	hdr2->ip_off = 0;			// fragment offset field 
 	hdr2->ip_ttl = 255;			// time to live (how to determine?)
 	hdr2->ip_p = ip_protocol_icmp;			// protocol 
-	hdr2->ip_src = out_iface->ip;	//how do we know source (our) interface ip addr?
+	hdr2->ip_src = iface->ip;	//how do we know our interface ip addr?
 	hdr2->ip_dst = iphdr->ip_src;	
 	hdr2->ip_sum = cksum(hdr2, 16);			// checksum 
 
