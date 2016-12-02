@@ -196,7 +196,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		hdr2->ip_tos = 0;			/* Unknown what value needed! type of service */
 		hdr2->ip_len = 54;			
 		hdr2->ip_id = 0;			/* identification */
-		hdr2-> ip_off = 0;			/* fragment offset field */
+		hdr2->ip_off = 0;			/* fragment offset field */
 		hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
@@ -217,6 +217,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 			hdr3->data[i] = req->packets->buf[i];
 		}
 
+<<<<<<< HEAD
 		
 		 /*unsure of what len should be*/
 		hdr3->icmp_sum = cksum(hdr3, 28);
@@ -236,6 +237,26 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 	      req->sent = now;
 	      req->times_sent++;
    	 }
+=======
+		sr_send_packet(sr, pkt, 66, iphdr->ip_src);
+			req->packets = req->packets->next;
+			free(pkt);
+
+		}
+		
+
+      sr_arpreq_destroy(&(sr->cache), req);
+    }
+    else
+    { 
+      /* Send ARP request packet */
+      sr_send_arprequest(sr, req, out_iface);
+       
+      /* Update ARP request entry to indicate ARP request packet was sent */ 
+      req->sent = now;
+      req->times_sent++;
+    }
+>>>>>>> 83c90a6373385af7ae80bbe5d4be8cbcf2550f9b
   }
 } /* -- sr_handle_arpreq -- */
 
@@ -367,10 +388,17 @@ void sr_handlepacket(struct sr_instance* sr,
 	/*************************************************************************/
 	/* TODO: Handle packets                                                  */
 
+<<<<<<< HEAD
 	
 	/* Is this what justin means?
 	if (ethhdr->ether_dhost == interface) //to check if destination is the router?
 	  */
+=======
+
+	/*************************************************************************/
+
+
+>>>>>>> 83c90a6373385af7ae80bbe5d4be8cbcf2550f9b
 	
 	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
 	//(And also is apparently used for checksum calcs too)
@@ -391,64 +419,91 @@ void sr_handlepacket(struct sr_instance* sr,
 
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
-		sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
-		if (arphdr->ar_op == (1 || 2))
-		{
+
 			sr_handlepacket_arp(sr, packet, len, interface);
-		}
+		
 	}
 	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
-	  //change header fields
+	  
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
+
+	  //first verify length
+	  if (iphdr->ip_len < 20)
+	  {
+		  printf("Packet is too short => drop packet\n");
+		  return;
+	  }
+					       
+	  // then, verify header checksum
+	  sr_ip_hdr_t chksum = memcopy(iphdr, sizeof(struct sr_ip_hdr);
+	  chksum.ip_sum = 0;
+	  chksum.ip_sum = cksum(&chksum, sizeof(struct sr_ip_hdr);
+	  if(chk.sip_sum != iphdr->ip_sum){
+		  printf("Packet failed checksum => drop packet\n");
+		  return;
+	  }
+	  
+	  //change header fields
 	  (unsigned char)(iphdr->ip_ttl)--; //decrement TTL
 	  iphdr->ip_sum = cksum(iphdr, 16); //recalculate checksum
 
-	  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
-		  send_icmp(sr, packet, len, interface, 11, 0);
+	  
+
+	  //check if address matches router 
+
+	  struct sr_if * our_interface = (struct sr_if *) interface; //is this 
+	  
+	  if (iphdr->ip_dst == our_interface->ip) //how to get our ip address?
+	  {
+		  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
+		  if (icmphdr->icmp_type == 0)						//and if an icmp echo, then respond
+		  {
+			  send_icmp(sr, packet, len, interface, 0, 0);
+		  }
+		  else
+		  {												//and if UDP/TCP, then port unreachable => type 3, code 3 error
+			  send_icmp(sr, packet, len, interface, 3, 3);
+		  }
 	  }
 	  else {
-		  //check if address matches router 
-
-		  struct sr_if * our_interface = (struct sr_if *) interface; //is this 
-		  if (iphdr->ip_dst == our_interface->ip) //how to get our ip address?
-		  {
-			  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
-			  if (icmphdr->icmp_type == 0)						//and if an icmp echo, then respond
-			  {
-				  send_icmp(sr, packet, len, interface, 0, 0);
-			  }
-			  else
-			  {												//and if UDP/TCP, then port unreachable => type 3, code 3 error
-				  send_icmp(sr, packet, len, interface, 3, 3);
-			  }
+		  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
+			  send_icmp(sr, packet, len, interface, 11, 0);
 		  }
 		  else 
 		  {	
 			  //check router table for ip
 			  struct sr_rt temp = sr->routing_table;
-			  bool isEntry = false;
+			  struct sr_rt best;	//best entry found
+			  int b_len = 0;		//best length found
 			  while (temp != null)
 			  {
-				  if (temp.dest == iphdr->ip_dst)
+				  int check = iphdr->ip_dst ^ temp.dest; //1's represent differing values
+				  int count = 0;
+				  while (check < 0 && count < 32) //when negative, first bit is 1
 				  {
-					  isEntry = true;
-					  break;
+					  count++;
+					  check = check << 1;
+				  }
+				  if (count > b_len) {
+					  best = temp;
+					  b_len = count;
 				  }
 				  temp = temp.next;
 			  }
 
 			  // if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)
-			  if (isValid == false)
+			  if (temp == NULL)
 			  {
 				  send_icmp(sr, packet, len, interface, 3, 0);
 			  }
 			  else  //if isValid, check arp cache for address
 			  {
-				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, iphdr->ip_dst);
+				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, best.dest);
 
 				  if (ent != null) //if found
 				  {
 					  //send 
+					sr_send_packet(sr, packet, len, ent.ip);
 				  }
 				  else { //if not found
 					  // check requests (automatically adds packet to request list) ? I don't remember what I meant
@@ -459,7 +514,12 @@ void sr_handlepacket(struct sr_instance* sr,
 		  }
 	  }
   }
-	//else //what do we do when it's neither ARP or IP?
+	}
+	else {//if it's neither ARP or IP
+
+		printf("Packet is of unkonwn type => drop packet\n");
+		return;
+	}
 
 }/* end sr_handlepacket */
 
@@ -505,7 +565,7 @@ void send_icmp(struct sr_instance* sr,
 	hdr3->next_mtu = 0;
 	hdr3->unused = 0;
 	hdr3->data = buf[0:27];
-	icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+	icmp_sum = cksum(hdr3, 36); //unsure of what len should be
 
 	sr_send_packet(sr, pkt, 66, iphdr->ip_src);
 	free(pkt);
