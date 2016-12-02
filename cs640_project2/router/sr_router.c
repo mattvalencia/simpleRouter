@@ -90,7 +90,38 @@ void sr_send_arpreply(struct sr_instance *sr, uint8_t *orig_pkt,
   reply_arphdr->ar_hrd = orig_arphdr->ar_hrd;
   reply_arphdr->ar_pro = orig_arphdr->ar_pro;
   reply_arphdr->ar_hln = orig_arphdr->ar_hln;
-  reply_arphdr->ar_pln = orig_arphdr->ar_pln;
+truct sr_packet {
+    uint8_t *buf;               /* A raw Ethernet frame, presumably with the dest MAC empty */
+    unsigned int len;           /* Length of raw Ethernet frame */
+    char *iface;                /* The outgoing interface */
+    struct sr_packet *next;
+};
+
+struct sr_arpentry {
+    unsigned char mac[6];
+    uint32_t ip;                /* IP addr in network byte order */
+    time_t added;
+    int valid;
+};
+
+struct sr_arpreq {
+    uint32_t ip;
+    time_t sent;                /* Last time this ARP request was sent. You 
+                                   should update this. If the ARP request was 
+                                   never sent, will be 0. */
+    uint32_t times_sent;        /* Number of times this request was sent. You 
+                                   should update this. */
+    struct sr_packet *packets;  /* List of pkts waiting on this req to finish */
+    struct sr_arpreq *next;
+};
+
+struct sr_arpcache {
+    struct sr_arpentry entries[SR_ARPCACHE_SZ];
+    struct sr_arpreq *requests;
+    pthread_mutex_t lock;
+    pthread_mutexattr_t attr;
+};
+ reply_arphdr->ar_pln = orig_arphdr->ar_pln;
   reply_arphdr->ar_op = htons(arp_op_reply); 
   memcpy(reply_arphdr->ar_tha, orig_arphdr->ar_sha, ETHER_ADDR_LEN);
   reply_arphdr->ar_tip = orig_arphdr->ar_sip;
@@ -287,15 +318,13 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 
 	  //req has pointer to packets
 
-      /*********************************************************************/
-
-	
 		while (req->packets != NULL)
 		{
 			sr_send_packet(sr, req->packets->buf, req->packets->len, src_iface);
 			req->packets = req->packets->next;
 		}
-
+	
+      /*********************************************************************/
 
       /* Release ARP request entry */
       sr_arpreq_destroy(&(sr->cache), req);
