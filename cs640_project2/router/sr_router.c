@@ -176,16 +176,20 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		{
 		uint8_t * pkt = malloc(66);
 
-		sr_ethernet_hdr_t * hdr1 = pkt;
+		sr_ethernet_hdr_t *hdr1 = (sr_ethernet_hdr_t *)pkt;
 
 		/* Populate Ethernet header */
-		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address?
+			
+		/* how to find orginal source address?*/
+		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); 
 		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
 		hdr1->ether_type = htons(ethertype_ip);
 
-		sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
+		sr_ip_hdr_t *hdr2 =(sr_ip_hdr_t *)( pkt + sizeof(struct sr_ethernet_hdr));
 
-		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf); //extract source address from IP addr
+		
+ 		/* extract source address from IP addr */
+		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf);
 		iphdr->ip_dst = iphdr->ip_src;
 
 
@@ -200,48 +204,38 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 
-		//add error code
-		sr_icmp_t3_hdr_t * hdr3 = pkt + 30;
+		/*add error code*/
+		sr_icmp_t3_hdr_t * hdr3 =(sr_icmp_t3_hdr_t *)( pkt + 30);
 		hdr3->icmp_type = 3;
 		hdr3->icmp_code = 1;
 		hdr3->icmp_sum = 0;
 		hdr3->next_mtu = 0;
 		hdr3->unused = 0;
-		hdr3->data = buf[0:27];
-		icmp_sum = cksum(hdr3, 28); //unsure of what len should be
 
-
-
-		sr_send_packet(sr, pkt, 66, iphdr->ip_src);
-			req->packets = req->packets->next;
-			free(pkt);
+		int i = 0;
+		for(i = 0; i < 28; i++){	
+			hdr3->data[i] = req->packets->buf[i];
 		}
+
 		
+		 /*unsure of what len should be*/
+		hdr3->icmp_sum = cksum(hdr3, 28);
 
-
-<<<<<<< HEAD
-      /*********************************************************************/
-        /* Alex H. (Commented stuff is based off Python, but this is the outline of how to do the above TODO
-    //header = struct.pack("!BBHHH", 3, 1, myChecksum, 0, 0)#Make packet header
-	//Calc header with 0 in checksum + data.
-	//Internet Header + 64 bits of Original Data Datagram.
-	// data = [0:63] bits of data from the Data Packet sent.
-	//Use that Data+header to calc checksum, then make packet again with same data and checksum = calculated checksum.
-*/
-=======
->>>>>>> 365aa9f0d1587d599fc14e0f21931f00d75854b5
-
-      sr_arpreq_destroy(&(sr->cache), req);
-    }
-    else
-    { 
-      /* Send ARP request packet */
-      sr_send_arprequest(sr, req, out_iface);
-       
-      /* Update ARP request entry to indicate ARP request packet was sent */ 
-      req->sent = now;
-      req->times_sent++;
-    }
+		sr_send_packet(sr, pkt, 66, out_iface->name);
+			req->packets = req->packets->next;
+		
+	      sr_arpreq_destroy(&(sr->cache), req);
+   	       }
+	}
+   	 else
+   	 { 
+	      /* Send ARP request packet */
+	      sr_send_arprequest(sr, req, out_iface);
+	       
+	      /* Update ARP request entry to indicate ARP request packet was sent */ 
+	      req->sent = now;
+	      req->times_sent++;
+   	 }
   }
 } /* -- sr_handle_arpreq -- */
 
@@ -302,12 +296,12 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
     /* Process pending ARP request entry, if there is one */
     if (req != NULL)
     {
-      /*********************************************************************/
-      /* TODO: send all packets on the req->packets linked list            */
+      /*********************************************************************
+       TODO: send all packets on the req->packets linked list         
 
-	  //req has pointer to packets
+	  req has pointer to packets
 
-      /*********************************************************************/
+      *********************************************************************/
 		sr_ethernet_hdr_t *hdr;
 
 		while (req->packets != NULL)
@@ -373,9 +367,7 @@ void sr_handlepacket(struct sr_instance* sr,
 	/*************************************************************************/
 	/* TODO: Handle packets                                                  */
 
-
-	/*************************************************************************/
-
+	
 	/* Is this what justin means?
 	if (ethhdr->ether_dhost == interface) //to check if destination is the router?
 	  */
@@ -392,6 +384,11 @@ void sr_handlepacket(struct sr_instance* sr,
 	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
 	
 	//Determine if ARP
+
+
+	/*************************************************************************/
+
+
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
 		sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
