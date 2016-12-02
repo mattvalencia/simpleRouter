@@ -192,7 +192,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		hdr2->ip_tos = 0;			/* Unknown what value needed! type of service */
 		hdr2->ip_len = 54;			
 		hdr2->ip_id = 0;			/* identification */
-		hdr2-> ip_off = 0;			/* fragment offset field */
+		hdr2->ip_off = 0;			/* fragment offset field */
 		hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
@@ -211,14 +211,12 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		icmp_sum = cksum(hdr3, 28); //unsure of what len should be
 
 
-
 		sr_send_packet(sr, pkt, 66, iphdr->ip_src);
 			req->packets = req->packets->next;
 			free(pkt);
+
 		}
 		
-
-
 
       sr_arpreq_destroy(&(sr->cache), req);
     }
@@ -365,24 +363,25 @@ void sr_handlepacket(struct sr_instance* sr,
 
 	/*************************************************************************/
 
-	/* Is this what justin means?
-	if (ethhdr->ether_dhost == interface) //to check if destination is the router?
-	  */
 
 	//Determine if ARP
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
-		sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
-		if (arphdr->ar_op == (1 || 2))
-		{
 			sr_handlepacket_arp(sr, packet, len, interface);
-		}
 	}
 	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
 	  //change header fields
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
 	  (unsigned char)(iphdr->ip_ttl)--; //decrement TTL
 	  iphdr->ip_sum = cksum(iphdr, 16); //recalculate checksum
+
+	  
+	  if (iphdr->ip_len < 20)
+	  {
+		  printf("Packet is too short => drop packet\n");
+		  return;
+	  }
+	  
 
 	  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
 		  send_icmp(sr, packet, len, interface, 11, 0);
@@ -430,6 +429,7 @@ void sr_handlepacket(struct sr_instance* sr,
 				  if (ent != null) //if found
 				  {
 					  //send 
+					sr_send_packet(sr, packet, len, ent.ip);
 				  }
 				  else { //if not found
 					  // check requests (automatically adds packet to request list) ? I don't remember what I meant
@@ -439,8 +439,12 @@ void sr_handlepacket(struct sr_instance* sr,
 			  }
 		  }
 	  }
-  }
-	//else //what do we do when it's neither ARP or IP?
+	}
+	else {//if it's neither ARP or IP
+
+		printf("Packet is of unkonwn type => drop packet\n");
+		return;
+	}
 
 }/* end sr_handlepacket */
 
@@ -486,7 +490,7 @@ void send_icmp(struct sr_instance* sr,
 	hdr3->next_mtu = 0;
 	hdr3->unused = 0;
 	hdr3->data = buf[0:27];
-	icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+	icmp_sum = cksum(hdr3, 36); //unsure of what len should be
 
 	sr_send_packet(sr, pkt, 66, iphdr->ip_src);
 	free(pkt);
