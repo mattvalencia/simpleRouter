@@ -115,7 +115,7 @@ struct sr_arpreq *sr_arpcache_queuereq(struct sr_arpcache *cache,
 
 /* This method performs two functions:
    1) Looks up this IP in the request queue. If it is found, returns a pointer
-      to the sr_arpreq with this IP. Otherwise, returns NULL.
+      to the sr_arpreq and all packets linked to it with this IP. Otherwise, returns NULL.
    2) Inserts this IP to MAC mapping in the cache, and marks it valid. */
 struct sr_arpreq *sr_arpcache_insert(struct sr_arpcache *cache,
                                      unsigned char *mac,
