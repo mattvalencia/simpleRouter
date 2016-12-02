@@ -408,48 +408,56 @@ void sr_handlepacket(struct sr_instance* sr,
 	  }
 	  
 
-	  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
-		  send_icmp(sr, packet, len, interface, 11, 0);
+	  //check if address matches router 
+
+	  struct sr_if * our_interface = (struct sr_if *) interface; //is this 
+	  
+	  if (iphdr->ip_dst == our_interface->ip) //how to get our ip address?
+	  {
+		  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
+		  if (icmphdr->icmp_type == 0)						//and if an icmp echo, then respond
+		  {
+			  send_icmp(sr, packet, len, interface, 0, 0);
+		  }
+		  else
+		  {												//and if UDP/TCP, then port unreachable => type 3, code 3 error
+			  send_icmp(sr, packet, len, interface, 3, 3);
+		  }
 	  }
 	  else {
-		  //check if address matches router 
-
-		  struct sr_if * our_interface = (struct sr_if *) interface; //is this 
-		  if (iphdr->ip_dst == our_interface->ip) //how to get our ip address?
-		  {
-			  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
-			  if (icmphdr->icmp_type == 0)						//and if an icmp echo, then respond
-			  {
-				  send_icmp(sr, packet, len, interface, 0, 0);
-			  }
-			  else
-			  {												//and if UDP/TCP, then port unreachable => type 3, code 3 error
-				  send_icmp(sr, packet, len, interface, 3, 3);
-			  }
+		  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
+			  send_icmp(sr, packet, len, interface, 11, 0);
 		  }
 		  else 
 		  {	
 			  //check router table for ip
 			  struct sr_rt temp = sr->routing_table;
-			  bool isEntry = false;
+			  struct sr_rt best;	//best entry found
+			  int b_len = 0;		//best length found
 			  while (temp != null)
 			  {
-				  if (temp.dest == iphdr->ip_dst)
+				  int check = iphdr->ip_dst ^ temp.dest;
+				  int count = 0;
+				  while (check < 0 && count < 32)
 				  {
-					  isEntry = true;
-					  break;
+					  count++;
+					  check = check << 1;
+				  }
+				  if (count > b_len) {
+					  best = temp;
+					  b_len = count;
 				  }
 				  temp = temp.next;
 			  }
 
 			  // if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)
-			  if (isValid == false)
+			  if (temp == NULL)
 			  {
 				  send_icmp(sr, packet, len, interface, 3, 0);
 			  }
 			  else  //if isValid, check arp cache for address
 			  {
-				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, iphdr->ip_dst);
+				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, best.dest);
 
 				  if (ent != null) //if found
 				  {
