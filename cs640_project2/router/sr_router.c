@@ -386,8 +386,15 @@ void sr_handlepacket(struct sr_instance* sr,
 	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
 	  
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
+
+	  //first verify length
+	  if (iphdr->ip_len < 20)
+	  {
+		  printf("Packet is too short => drop packet\n");
+		  return;
+	  }
 					       
-	  // first, verify header checksum
+	  // then, verify header checksum
 	  sr_ip_hdr_t chksum = memcopy(iphdr, sizeof(struct sr_ip_hdr);
 	  chksum.ip_sum = 0;
 	  chksum.ip_sum = cksum(&chksum, sizeof(struct sr_ip_hdr);
@@ -400,12 +407,6 @@ void sr_handlepacket(struct sr_instance* sr,
 	  (unsigned char)(iphdr->ip_ttl)--; //decrement TTL
 	  iphdr->ip_sum = cksum(iphdr, 16); //recalculate checksum
 
-	  
-	  if (iphdr->ip_len < 20)
-	  {
-		  printf("Packet is too short => drop packet\n");
-		  return;
-	  }
 	  
 
 	  //check if address matches router 
@@ -436,9 +437,9 @@ void sr_handlepacket(struct sr_instance* sr,
 			  int b_len = 0;		//best length found
 			  while (temp != null)
 			  {
-				  int check = iphdr->ip_dst ^ temp.dest;
+				  int check = iphdr->ip_dst ^ temp.dest; //1's represent differing values
 				  int count = 0;
-				  while (check < 0 && count < 32)
+				  while (check < 0 && count < 32) //when negative, first bit is 1
 				  {
 					  count++;
 					  check = check << 1;
