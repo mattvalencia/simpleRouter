@@ -179,7 +179,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		sr_ethernet_hdr_t * hdr1 = pkt;
 
 		/* Populate Ethernet header */
-		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address
+		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address?
 		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
 		hdr1->ether_type = htons(ethertype_ip);
 
@@ -189,7 +189,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		iphdr->ip_dst = iphdr->ip_src;
 
 
-		hdr2->ip_tos = 0;			/* Unknonwn what value needed! type of service */
+		hdr2->ip_tos = 0;			/* Unknown what value needed! type of service */
 		hdr2->ip_len = 54;			
 		hdr2->ip_id = 0;			/* identification */
 		hdr2-> ip_off = 0;			/* fragment offset field */
@@ -365,55 +365,123 @@ void sr_handlepacket(struct sr_instance* sr,
 
   /*************************************************************************/
 
+  /* Is this what justin means? 
+  sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
+  if (ethhdr->ether_dhost == interface) //to check if destination is the router
+
+  if(ethhdr->ether_type == 0x0806) //to check if ARP
+	*/
+
   //Determine if ARP
-  sr_arp_hdr_t *arphdr = (sr_arp_hdr_t)(packet+sizeof(struct sr_ethernet_hdr);
+  sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(packet+sizeof(struct sr_ethernet_hdr);
   if (arphdr->ar_op == (1 || 2)) 
 	{ sr_handlepacket_arp(sr, packet, len, interface); }
 
   //if not ARP, 
-
   else {
-		//change header fields
-		  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t)(packet + sizeof(struct sr_ethernet_hdr);
-		  (unsigned char)(iphdr->ip_ttl)--;
-		  iphdr->ip_sum = cksum(iphdr, 16);
-		  if (iphdr->ip_ttl == 0) { //time exceeded type 11, code 0
-			  send_icmp(sr, packet, len, interface, 11, 0);
-		  }
-		  else{
+	  //change header fields
+	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
+	  (unsigned char)(iphdr->ip_ttl)--;
+	  iphdr->ip_sum = cksum(iphdr, 16);
 
-
-			 //check if address matches router (if UDP/TCP, port unreachable type 3, code 3 error)
-				//if icmp echo, respond
-			  if (iphdr->ip_dst == ) {//how to get own ip address?
-				  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
-				  if (icmphdr->icmp_type == 0)
-					  send_icmp(sr, packet, len, interface, 0, 0);
-				  else
-					  send_icmp(sr, packet, len, interface, 3, 3);
+	  if (iphdr->ip_ttl == 0) { //time exceeded => type 11, code 0 error
+		  send_icmp(sr, packet, len, interface, 11, 0);
+	  }
+	  else {
+		  //check if address matches router 
+		  if (iphdr->ip_dst == ) //how to get own ip address?
+		  {
+			  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t)(iphdr + sizeof(sr_ip_hdr_t));
+			  if (icmphdr->icmp_type == 0)								//and if an icmp echo, then respond
+			  {
+				  send_icmp(sr, packet, len, interface, 0, 0);
 			  }
-			  else{	//check rt for ip mapping
-				  struct sr_rt temp= sr->routing_table;
-				  bool isEntry = false;
-				  while (temp != null) {
-					  if (temp.dest == iphdr->ip_dst) {
-						  isEntry = true;
-						  break;
-					  }
-					  temp = temp.next;
+			  else
+			  {															//and if UDP/TCP, then port unreachable => type 3, code 3 error
+				  send_icmp(sr, packet, len, interface, 3, 3);
+			  }
+		  }
+		  else
+		  {	//check router table for ip
+			  struct sr_rt temp = sr->routing_table;
+			  bool isEntry = false;
+			  while (temp != null)
+			  {
+				  if (temp.dest == iphdr->ip_dst)
+				  {
+					  isEntry = true;
+					  break;
 				  }
+				  temp = temp.next;
+			  }
 
-				  //if !isValid Destination Net Unreachable (type 3, code 0) 
-
-
-				  
-				  //if isValid, check arp cache for address => call the sr_arpcache_lookup
-
+			  // if !isValid => Destination Net Unreachable (type 3, code 0)
+			  if (isValid == false)
+			  {
+				  send_icmp(sr, packet, len, interface, 3, 0);
+			  }
+			  else  //if isValid, check arp cache for address
+			  {
 				  struct sr_arpentry ent = sr_arpcache_lookup(sr->cache, iphdr->ip_dst);
-				  //send if found
-				  
-		//if not found, check requests (automatically adds packet to request list)
-  }
 
+				  if (ent != null)
+				  {
+					  //send if found
+				  }
+				  else {
+					  //if not found, check requests (automatically adds packet to request list) ?
+
+					  sr_waitforarp(sr, packet, len, ent.ip, interface); 
+				  }
+			  }
+		  }
+	  }
+  }
 }/* end sr_ForwardPacket */
 
+
+/*not done
+
+void send_icmp(struct sr_instance* sr,
+	uint8_t * packet, // lent 
+	unsigned int len,
+	char* interface, // lent 
+	int type, int code)
+{
+	uint8_t * pkt = malloc(66);
+	sr_ethernet_hdr_t * hdr1 = pkt;
+
+	// Populate Ethernet header 
+	memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address?
+	memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);   //how do we know source (our) interface addr?
+	hdr1->ether_type = htons(ethertype_ip);
+
+	sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
+
+	sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet); //extract source address
+	iphdr->ip_dst = iphdr->ip_src;
+
+	hdr2->ip_tos = 0;			// Unknown what value needed! type of service 
+	hdr2->ip_len = 54;
+	hdr2->ip_id = 0;			// identification 
+	hdr2->ip_off = 0;			// fragment offset field 
+	hdr2->ip_ttl = 255;			// time to live (how to determine?)
+	hdr2->ip_p = ip_protocol_icmp;			// protocol 
+	hdr2->ip_src = out_iface->ip;	//how do we know source (our) interface ip addr?
+	hdr2->ip_dst = iphdr->ip_src;	
+	hdr2->ip_sum = cksum(hdr2, 16);			// checksum 
+
+											//add error code
+	sr_icmp_t3_hdr_t * hdr3 = pkt + 30;
+	hdr3->icmp_type = type;
+	hdr3->icmp_code = code;
+	hdr3->icmp_sum = 0;
+	hdr3->next_mtu = 0;
+	hdr3->unused = 0;
+	hdr3->data = buf[0:27];
+	icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+
+	sr_send_packet(sr, pkt, 66, iphdr->ip_src);
+	free(pkt);
+}
+*/
