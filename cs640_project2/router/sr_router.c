@@ -384,8 +384,19 @@ void sr_handlepacket(struct sr_instance* sr,
 		
 	}
 	else if (ethhdr->ether_type == 0x0800 ){ //if IP, 
-	  //change header fields
+	  
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr);
+					       
+	  // first, verify header checksum
+	  sr_ip_hdr_t chksum = memcopy(iphdr, sizeof(struct sr_ip_hdr);
+	  chksum.ip_sum = 0;
+	  chksum.ip_sum = cksum(&chksum, sizeof(struct sr_ip_hdr);
+	  if(chk.sip_sum != iphdr->ip_sum){
+		  printf("Packet failed checksum => drop packet\n");
+		  return;
+	  }
+	  
+	  //change header fields
 	  (unsigned char)(iphdr->ip_ttl)--; //decrement TTL
 	  iphdr->ip_sum = cksum(iphdr, 16); //recalculate checksum
 
