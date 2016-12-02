@@ -371,6 +371,8 @@ void sr_handlepacket(struct sr_instance* sr,
 	
 	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
 	//(And also is apparently used for checksum calcs too)
+	// Or we can just copy + past ethe length checkers in the other parts of the code and use those instead to check
+	// The ethernet and IP sizes.
 	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
 	
 	//Determine if ARP
