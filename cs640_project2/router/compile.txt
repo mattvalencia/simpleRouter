@@ -1,0 +1,94 @@
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ make
+gcc -c -g -Wall -ansi -D_DEBUG_ -D_GNU_SOURCE -D_LINUX_ sr_router.c -o sr_router.o
+sr_router.c: In function ‘sr_handle_arpreq’:
+sr_router.c:179:30: warning: initialization from incompatible pointer type [enabled by default]
+   sr_ethernet_hdr_t * hdr1 = pkt;
+                              ^
+sr_router.c:182:52: error: expected expression before ‘/’ token
+   memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); //how to find orginal source address?
+                                                    ^
+sr_router.c:186:23: warning: initialization from incompatible pointer type [enabled by default]
+   sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
+                       ^
+sr_router.c:188:60: error: expected expression before ‘/’ token
+   sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf); //extract source address from IP addr
+                                                            ^
+sr_router.c:203:3: error: expected expression before ‘/’ token
+   //add error code
+   ^
+sr_router.c:205:3: error: ‘hdr3’ undeclared (first use in this function)
+   hdr3->icmp_type = 3;
+   ^
+sr_router.c:205:3: note: each undeclared identifier is reported only once for each function it appears in
+sr_router.c:210:16: error: ‘buf’ undeclared (first use in this function)
+   hdr3->data = buf[0:27];
+                ^
+sr_router.c:210:21: error: expected ‘]’ before ‘:’ token
+   hdr3->data = buf[0:27];
+                     ^
+sr_router.c:211:3: error: ‘icmp_sum’ undeclared (first use in this function)
+   icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+   ^
+sr_router.c:211:31: error: expected expression before ‘/’ token
+   icmp_sum = cksum(hdr3, 28); //unsure of what len should be
+                               ^
+sr_router.c:222:1: error: expected expression before ‘<<’ token
+ <<<<<<< HEAD
+ ^
+sr_router.c:232:9: error: invalid suffix "aa9f0d1587d599fc14e0f21931f00d75854b5" on integer constant
+ >>>>>>> 365aa9f0d1587d599fc14e0f21931f00d75854b5
+         ^
+sr_router.c: In function ‘sr_handlepacket_arp’:
+sr_router.c:308:4: error: expected expression before ‘/’ token
+    //req has pointer to packets
+    ^
+sr_router.c:315:26: error: ‘sr_ethernet_hdr’ undeclared (first use in this function)
+    int pkt_size = sizeof(sr_ethernet_hdr) + req->packets->len;
+                          ^
+sr_router.c:318:4: error: ‘hdr’ undeclared (first use in this function)
+    hdr = pkt;
+    ^
+sr_router.c:325:42: error: ‘reg’ undeclared (first use in this function)
+    memcpy(pkt + sizeof(sr_ethernet_hdr), reg->packets, req->packets->len);
+                                          ^
+sr_router.c:327:4: warning: pointer targets in passing argument 4 of ‘sr_send_packet’ differ in signedness [-Wpointer-sign]
+    sr_send_packet(sr, hdr, pkt_size, src_iface->addr);
+    ^
+In file included from sr_router.c:22:0:
+sr_router.h:63:5: note: expected ‘const char *’ but argument is of type ‘unsigned char *’
+ int sr_send_packet(struct sr_instance* , uint8_t* , unsigned int , const char*);
+     ^
+sr_router.c: In function ‘sr_handlepacket’:
+sr_router.c:383:2: error: expected expression before ‘/’ token
+  //  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
+  ^
+sr_router.c:383:130: warning: missing terminating ' character [enabled by default]
+  //  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
+                                                                                                                                  ^
+sr_router.c:383:2: error: missing terminating ' character
+  //  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
+  ^
+sr_router.c:390:28: warning: missing terminating ' character [enabled by default]
+  // If == then we know they're for us and we handle them, if not equal we pass em on.
+                            ^
+sr_router.c:390:2: error: missing terminating ' character
+  // If == then we know they're for us and we handle them, if not equal we pass em on.
+  ^
+sr_router.c:457:77: warning: missing terminating ' character [enabled by default]
+        // check requests (automatically adds packet to request list) ? I don't remember what I meant
+                                                                             ^
+sr_router.c:457:8: error: missing terminating ' character
+        // check requests (automatically adds packet to request list) ? I don't remember what I meant
+        ^
+sr_router.c:465:32: warning: missing terminating ' character [enabled by default]
+  //else //what do we do when it's neither ARP or IP?
+                                ^
+sr_router.c:465:2: error: missing terminating ' character
+  //else //what do we do when it's neither ARP or IP?
+  ^
+sr_router.c:470:1: error: expected declaration or statement at end of input
+ //*not done
+ ^
+make: *** [sr_router.o] Error 1
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ 
+
