@@ -368,7 +368,11 @@ void sr_handlepacket(struct sr_instance* sr,
 	/* Is this what justin means?
 	if (ethhdr->ether_dhost == interface) //to check if destination is the router?
 	  */
-
+	
+	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
+	//(And also is apparently used for checksum calcs too)
+	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
+	
 	//Determine if ARP
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		//to check if ARP
