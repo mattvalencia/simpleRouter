@@ -404,10 +404,12 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
 	//Determine if ARP
 	*************************************************************************/
-	
 	struct sr_if * our_interface = sr_get_interface(sr, interface);
+	
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
-	printf("Ethernet type: %d\n", ethertype(packet));
+	
+	printf("Ethernet type: %x\n", ethertype(packet));
+	
 	if (ntohs(ethhdr->ether_type) == 0x0806) {		/*to check if ARP*/
 		sr_handlepacket_arp(sr, packet, len, our_interface);
 	}
@@ -436,6 +438,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	  if (iphdr->ip_dst == our_interface->ip) /*how to get our ip address?*/
 	  {
 		  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t *)(iphdr + sizeof(sr_ip_hdr_t));
+		sr_send_packet(sr, packet, len, interface);
 		  if (icmphdr->icmp_type == 0) /*and if an icmp echo, then respond*/
 		  {
 			  send_icmp(sr, packet, len, interface, 0, 0);
@@ -536,7 +539,7 @@ void send_icmp(struct sr_instance* sr,
 	hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 	hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 	hdr2->ip_src = iface->ip;	/*how do we know our interface ip addr?*/
-	hdr2->ip_dst = iphdr->ip_src;	
+	hdr2->ip_dst =ntohs(iphdr->ip_dst);	
 	hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 	/*add error code*/
