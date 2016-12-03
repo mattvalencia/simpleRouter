@@ -209,6 +209,7 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
 		hdr2->ip_dst = iphdr->ip_src;	/* source and dest address */
+		printf("\n\n ###ip dest: %u\n", hdr2->ip_dst);
 		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 
@@ -456,7 +457,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 		  {	
 			  /*check router table for ip*/
 			  struct sr_rt* temp = sr->routing_table;
-			  struct sr_rt best;	/*best entry found*/
+			  struct sr_rt* best;	/*best entry found*/
 			  int b_len = 0;		/*best length found*/
 			  while (temp != NULL)
 			  {
@@ -471,22 +472,23 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 					  check = check << 1;
 				  }
 				  if (count > b_len) {
-					  best = *temp;
+					  best = temp;
 					  b_len = count;
 				  }
 				  temp = temp->next;
 			  }
 	 /* if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)*/
-			  if (temp == NULL)
+			  if (best == NULL)
 			  {
 				  send_icmp(sr, packet, len, interface, 3, 0);
 			  }
 			  else  /*if isValid, check arp cache for address*/
 			  {
-				  struct sr_arpentry* ent = sr_arpcache_lookup(&sr->cache, best.dest.s_addr);
+				  struct sr_arpentry* ent = sr_arpcache_lookup(&sr->cache, best->dest.s_addr);
 
 				  if (ent != NULL) /*if found*/
-				  { 
+				  {
+					printf("not null\n"); 
 					sr_send_packet(sr, packet, len, interface);
 				  }
 				  else { /*if not found*/
@@ -494,7 +496,9 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 /*
 void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, uint32_t next_hop_ip, struct sr_if *out_iface)*/
-					  sr_waitforarp(sr, packet, len, ent->ip, our_interface); 
+				printf("#1\n");
+				print_hdrs(packet, len);
+					  sr_waitforarp(sr, packet, len, iphdr->ip_dst, our_interface); 
 				  }
 			  }
 	 	}
