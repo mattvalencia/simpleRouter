@@ -377,6 +377,10 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	assert(packet);
 	assert(interface);
 	printf("*** -> Received packet of length %d \n", len);
+
+	print_hdr_ip(packet);
+	print_hdr_eth(packet);
+	print_hdr_icmp(packet);
 	/************************************************************************
 	* TODO: Handle packets                                                  
 	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
@@ -393,10 +397,11 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	
 	struct sr_if * our_interface = (struct sr_if *) interface; /*is this */
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
-	if (ethhdr->ether_type == 0x0806) {		/*to check if ARP*/
+	printf("Ethernet type: %d\n", ethertype(packet));
+	if (ntohs(ethhdr->ether_type) == 0x0806) {		/*to check if ARP*/
 		sr_handlepacket_arp(sr, packet, len, our_interface);
 	}
-	else if (ethhdr->ether_type == 0x0800 ){ /*if IP*/
+	else if (ntohs(ethhdr->ether_type) == 0x0800 ){ /*if IP*/
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr));
 
 	  /*first verify length*/
