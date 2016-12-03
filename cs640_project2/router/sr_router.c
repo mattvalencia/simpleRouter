@@ -390,10 +390,11 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	// so we compare  if ((ip_hdr->ip_hl * 4) <20) then IP packet is too small.
 	//Determine if ARP
 	*************************************************************************/
-	struct sr_if* pk_if = sr_get_interface(sr, interface);
+	
+	struct sr_if * our_interface = (struct sr_if *) interface; /*is this */
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	if (ethhdr->ether_type == 0x0806) {		/*to check if ARP*/
-		sr_handlepacket_arp(sr, packet, len, pk_if);
+		sr_handlepacket_arp(sr, packet, len, our_interface);
 	}
 	else if (ethhdr->ether_type == 0x0800 ){ /*if IP*/
 	  sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet + sizeof(struct sr_ethernet_hdr));
@@ -417,7 +418,6 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	  (unsigned char)(iphdr->ip_ttl)--; /*decrement TTL*/
 	  iphdr->ip_sum = cksum(iphdr, 16); /*recalculate checksum*/
 	  /*check if address matches router */
-	  struct sr_if * our_interface = (struct sr_if *) interface; /*is this */
 	  if (iphdr->ip_dst == our_interface->ip) /*how to get our ip address?*/
 	  {
 		  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t *)(iphdr + sizeof(sr_ip_hdr_t));
@@ -467,7 +467,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 			  {
 				  struct sr_arpentry ent = sr_arpcache_lookup(&sr->cache, best.dest.s_addr);
 
-				  if (ent != null) /*if found*/
+				  if (ent != NULL) /*if found*/
 				  { 
 					sr_send_packet(sr, packet, len, ent.ip);
 				  }
@@ -495,7 +495,7 @@ void send_icmp(struct sr_instance* sr,
 	int type, int code)
 {
 	uint8_t * pkt = malloc(66);
-	sr_ethernet_hdr_t * hdr1 = pkt;
+	sr_ethernet_hdr_t * hdr1 = (sr_ethernet_hdr_t *)pkt;
 
 	 /*Would this be how to get our addr?*/
 	struct sr_if * iface = (struct sr_if *) interface;
@@ -505,7 +505,7 @@ void send_icmp(struct sr_instance* sr,
 	memcpy(hdr1->ether_shost, iface->addr, ETHER_ADDR_LEN);   /*how do we know our interface addr?*/
 	hdr1->ether_type = htons(ethertype_ip);
 
-	sr_ip_hdr_t *hdr2 = pkt + sizeof(struct sr_ethernet_hdr);
+	sr_ip_hdr_t *hdr2 = (sr_ip_hdr_t *)(pkt + sizeof(struct sr_ethernet_hdr));
 
 	sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(packet); /*extract source address*/
 	iphdr->ip_dst = iphdr->ip_src;
@@ -521,14 +521,19 @@ void send_icmp(struct sr_instance* sr,
 	hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 	/*add error code*/
-	sr_icmp_t3_hdr_t * hdr3 = pkt + 30;
+	sr_icmp_t3_hdr_t * hdr3 = (sr_icmp_t3_t *)(pkt + 30);
 	hdr3->icmp_type = type;
 	hdr3->icmp_code = code;
 	hdr3->icmp_sum = 0;
 	hdr3->next_mtu = 0;
 	hdr3->unused = 0;
-	hdr3->data = buf[0:27];
-	icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
+
+
+	int i = 0;     
+	for(i = 0; i < 28; i++){
+		hdr3->data[i] = packet->buf[i];
+	}
+	hdr3->icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
 
 	sr_send_packet(sr, pkt, 66, iphdr->ip_src);
 	free(pkt);
