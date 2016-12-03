@@ -121,7 +121,7 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
 	
 	printf("\nCALLTO: sr_send_arprequest()\n\n");
 	
-	print_hdrs((uint8_t *)req, (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)));
+print_hdrs(req->packets->buf, req->packets->len);	
   /* Allocate space for ARP request packet */
   unsigned int reqst_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t); 
 	uint8_t *reqst_pkt = (uint8_t *)malloc(reqst_len);
