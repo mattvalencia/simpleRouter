@@ -298,10 +298,13 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 
   sr_arp_hdr_t *arphdr = (sr_arp_hdr_t *)(pkt + sizeof(sr_ethernet_hdr_t));
 
+	sr_print_if(src_iface);
+	printf("ARP OP: %d, %d\n", arphdr->ar_op, ntohs(arphdr->ar_op));
   switch (ntohs(arphdr->ar_op))
   {
   case arp_op_request:
   {
+	printf("ar_tip: %u, ip: %u\n", arphdr->ar_tip, src_iface->ip);
     /* Check if request is for one of my interfaces */
     if (arphdr->ar_tip == src_iface->ip)
     { sr_send_arpreply(sr, pkt, len, src_iface); }
@@ -320,8 +323,8 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
     /* Process pending ARP request entry, if there is one */
     if (req != NULL)
     {
-      /*********************************************************************
-       TODO: send all packets on the req->packets linked list         
+       /******************************************************************
+	TODO: send all packets on the req->packets linked list         
 
 	  req has pointer to packets
 
@@ -386,7 +389,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	assert(interface);
 	printf("*** -> Received packet of length %d \n", len);
 
-	
+	printf("interface arg: %s\n", interface);	
 	print_hdrs(packet, len);
 	/************************************************************************
 	* TODO: Handle packets                                                  
@@ -402,7 +405,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	//Determine if ARP
 	*************************************************************************/
 	
-	struct sr_if * our_interface = (struct sr_if *) interface; /*is this */
+	struct sr_if * our_interface = sr_get_interface(sr, interface);
 	sr_ethernet_hdr_t * ethhdr = (sr_ethernet_hdr_t *)(packet);
 	printf("Ethernet type: %d\n", ethertype(packet));
 	if (ntohs(ethhdr->ether_type) == 0x0806) {		/*to check if ARP*/
@@ -507,14 +510,16 @@ void send_icmp(struct sr_instance* sr,
 	unsigned int len,
 	char* interface, /*lent*/
 	int type, int code)
-{
+	{
 	printf("CALLTO: send_icmp()\n");
+/*	printf("rcvd packets: %u\n", packet);*/
 	uint8_t * pkt = malloc(66);
 	sr_ethernet_hdr_t * hdr1 = (sr_ethernet_hdr_t *)pkt;
 
 	 /*Would this be how to get our addr?*/
-	struct sr_if * iface = (struct sr_if *) interface;
+	struct sr_if * iface = sr_get_interface(sr, interface);
 	struct sr_packet * pckt = (struct sr_packet *)packet;
+	print_hdrs(packet, len);
 	/* Populate Ethernet header */
 	memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); /*how to find orginal source address?*/
 	memcpy(hdr1->ether_shost, iface->addr, ETHER_ADDR_LEN);   /*how do we know our interface addr?*/
@@ -537,17 +542,23 @@ void send_icmp(struct sr_instance* sr,
 
 	/*add error code*/
 	sr_icmp_t3_hdr_t * hdr3 = (sr_icmp_t3_hdr_t *)(pkt + 30);
-	hdr3->icmp_type = type;
+	/*hdr3->icmp_type = type;
 	hdr3->icmp_code = code;
 	hdr3->icmp_sum = 0;
 	hdr3->next_mtu = 0;
 	hdr3->unused = 0;
 
 
+	sr_print_if(iface);
+	
+	printf("hdrd: %d\n", hdr3->data[ICMP_DATA_SIZE - 1]);
+	
+	printf("pkt: %d\n", pckt->buf[ICMP_DATA_SIZE - 1]);
 	int i = 0;     
 	for(i = 0; i < 28; i++){
 		hdr3->data[i] = pckt->buf[i];
 	}
+*/
 	hdr3->icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
 
 	sr_send_packet(sr, pkt, 66, interface);
