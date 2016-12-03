@@ -1,0 +1,43 @@
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ make
+gcc -c -g -Wall -ansi -D_DEBUG_ -D_GNU_SOURCE -D_LINUX_ sr_router.c -o sr_router.o
+sr_router.c: In function ‘sr_handlepacket’:
+sr_router.c:468:14: error: invalid initializer
+       struct sr_arpentry ent = sr_arpcache_lookup(&sr->cache, best.dest.s_addr);
+              ^
+sr_router.c:470:15: error: invalid operands to binary != (have ‘struct sr_arpentry’ and ‘void *’)
+       if (ent != NULL) /*if found*/
+               ^
+sr_router.c:472:6: warning: passing argument 4 of ‘sr_send_packet’ makes pointer from integer without a cast [enabled by default]
+      sr_send_packet(sr, packet, len, ent.ip);
+      ^
+In file included from sr_router.c:22:0:
+sr_router.h:63:5: note: expected ‘const char *’ but argument is of type ‘uint32_t’
+ int sr_send_packet(struct sr_instance* , uint8_t* , unsigned int , const char*);
+     ^
+sr_router.c:477:8: warning: passing argument 5 of ‘sr_waitforarp’ from incompatible pointer type [enabled by default]
+        sr_waitforarp(sr, packet, len, ent.ip, interface); 
+        ^
+sr_router.c:267:6: note: expected ‘struct sr_if *’ but argument is of type ‘char *’
+ void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
+      ^
+sr_router.c: In function ‘send_icmp’:
+sr_router.c:524:29: error: ‘sr_icmp_t3_t’ undeclared (first use in this function)
+  sr_icmp_t3_hdr_t * hdr3 = (sr_icmp_t3_t *)(pkt + 30);
+                             ^
+sr_router.c:524:29: note: each undeclared identifier is reported only once for each function it appears in
+sr_router.c:524:43: error: expected expression before ‘)’ token
+  sr_icmp_t3_hdr_t * hdr3 = (sr_icmp_t3_t *)(pkt + 30);
+                                           ^
+sr_router.c:534:25: error: request for member ‘buf’ in something not a structure or union
+   hdr3->data[i] = packet->buf[i];
+                         ^
+sr_router.c:538:2: warning: passing argument 4 of ‘sr_send_packet’ makes pointer from integer without a cast [enabled by default]
+  sr_send_packet(sr, pkt, 66, iphdr->ip_src);
+  ^
+In file included from sr_router.c:22:0:
+sr_router.h:63:5: note: expected ‘const char *’ but argument is of type ‘uint32_t’
+ int sr_send_packet(struct sr_instance* , uint8_t* , unsigned int , const char*);
+     ^
+make: *** [sr_router.o] Error 1
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ 
+
