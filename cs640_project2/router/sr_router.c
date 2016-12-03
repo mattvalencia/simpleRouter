@@ -119,7 +119,7 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
     struct sr_if *out_iface)
 {
 	
-	printf("CALLTO: sr_send_arprequest()\n");
+	printf("\nCALLTO: sr_send_arprequest()\n\n");
 	
 	print_hdrs((uint8_t *)req, (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)));
   /* Allocate space for ARP request packet */
@@ -499,7 +499,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, uint32_t next_hop_ip, struct sr_if *out_iface)*/
 				printf("#1\n");
-					  sr_waitforarp(sr, packet, len, iphdr->ip_dst, our_interface);
+					  sr_waitforarp(sr, packet, len, best->dest.s_addr, our_interface);
 				  }
 			  }
 	 	}
