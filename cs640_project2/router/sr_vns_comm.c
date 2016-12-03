@@ -564,7 +564,7 @@ int sr_send_packet(struct sr_instance* sr /* borrowed */,
                          unsigned int len,
                          const char* iface /* borrowed */)
 {
-	printf("CALLTO: sr_send_packet()\n");
+	printf("\nCALLTO: sr_send_packet()\n\n");
 	print_hdrs(buf, len);
     c_packet_header *sr_pkt;
     unsigned int total_len =  len + (sizeof(c_packet_header));

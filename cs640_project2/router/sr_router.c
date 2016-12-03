@@ -169,8 +169,8 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     struct sr_if *out_iface)
 {
 	printf("\nCALLTO: sr_handle_arpreq()\n\n");	
-	print_hdrs((uint8_t *)req, (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)));
-	uint8_t * pkt = malloc(66);
+print_hdrs(req->packets->buf, req->packets->len);	
+uint8_t * pkt = malloc(66);
 	time_t now = time(NULL);
   if (difftime(now, req->sent) >= 1.0)
   {
