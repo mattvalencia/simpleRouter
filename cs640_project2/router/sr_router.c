@@ -334,11 +334,11 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 
       *********************************************************************/
 		sr_ethernet_hdr_t *hdr;
-		sr_ethernet_hdr_t *arp_reply = pkt;
+		sr_ethernet_hdr_t *arp_reply = (sr_ethernet_hdr_t *)pkt;
 		while (req->packets != NULL)
 		{
 
-			uint8_t *pakt = (uint8_t *)malloc(req->packets->len;);
+			uint8_t *pakt = (uint8_t *)malloc(req->packets->len);
 			hdr = (sr_ethernet_hdr_t *) pakt;
 		
 			/* Populate Ethernet header */
@@ -499,6 +499,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, uint32_t next_hop_ip, struct sr_if *out_iface)*/
 				printf("#1\n");
+				printf("dest ip: %u\n", best->dest.s_addr);
 					  sr_waitforarp(sr, packet, len, best->dest.s_addr, our_interface);
 				  }
 			  }
