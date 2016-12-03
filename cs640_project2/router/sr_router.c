@@ -542,7 +542,7 @@ void send_icmp(struct sr_instance* sr,
 
 	/*add error code*/
 	sr_icmp_t3_hdr_t * hdr3 = (sr_icmp_t3_hdr_t *)(pkt + 30);
-	/*hdr3->icmp_type = type;
+	hdr3->icmp_type = type;
 	hdr3->icmp_code = code;
 	hdr3->icmp_sum = 0;
 	hdr3->next_mtu = 0;
@@ -558,7 +558,7 @@ void send_icmp(struct sr_instance* sr,
 	for(i = 0; i < 28; i++){
 		hdr3->data[i] = pckt->buf[i];
 	}
-*/
+
 	hdr3->icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
 
 	sr_send_packet(sr, pkt, 66, interface);
