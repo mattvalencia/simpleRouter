@@ -246,10 +246,10 @@ uint8_t * pkt = malloc(66);
 	      req->sent = now;
 	      req->times_sent++;
    	 }
-		sr_send_packet(sr, pkt, 66, out_iface->name);
+/*		sr_send_packet(sr, pkt, 66, out_iface->name);
 			req->packets = req->packets->next;
 			free(pkt);
-	
+*/	
       sr_arpreq_destroy(&(sr->cache), req);
     }
     else
