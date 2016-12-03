@@ -70,6 +70,8 @@ void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
 void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     struct sr_if *out_iface);
 void send_icmp(struct sr_instance* sr, uint8_t * packet , unsigned int len,  char* interface, int type, int code);
+void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
+     unsigned int len, struct sr_if *src_iface);
 
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
