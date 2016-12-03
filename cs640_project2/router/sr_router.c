@@ -518,7 +518,6 @@ void send_icmp(struct sr_instance* sr,
 
 	 /*Would this be how to get our addr?*/
 	struct sr_if * iface = sr_get_interface(sr, interface);
-	struct sr_packet * pckt = (struct sr_packet *)packet;
 	print_hdrs(packet, len);
 	/* Populate Ethernet header */
 	memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); /*how to find orginal source address?*/
@@ -548,15 +547,13 @@ void send_icmp(struct sr_instance* sr,
 	hdr3->next_mtu = 0;
 	hdr3->unused = 0;
 
-
+	uint8_t* ip_data = packet + sizeof(struct sr_ethernet_hdr);
 	sr_print_if(iface);
 	
-	printf("hdrd: %d\n", hdr3->data[ICMP_DATA_SIZE - 1]);
 	
-	printf("pkt: %d\n", pckt->buf[ICMP_DATA_SIZE - 1]);
 	int i = 0;     
 	for(i = 0; i < 28; i++){
-		hdr3->data[i] = pckt->buf[i];
+		hdr3->data[i] = ip_data[i];
 	}
 
 	hdr3->icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
