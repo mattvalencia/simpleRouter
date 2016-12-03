@@ -1,0 +1,392 @@
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ make
+gcc -MM -g -Wall -ansi -D_DEBUG_ -D_GNU_SOURCE -D_LINUX_ sr_router.c  > .sr_router.d
+gcc -c -g -Wall -ansi -D_DEBUG_ -D_GNU_SOURCE -D_LINUX_ sr_router.c -o sr_router.o
+gcc -g -Wall -ansi -D_DEBUG_ -D_GNU_SOURCE -D_LINUX_ -o sr sr_router.o sr_main.o sr_if.o sr_rt.o sr_vns_comm.o sr_utils.o sr_dumper.o sr_arpcache.o sha1.o -lnsl -lresolv -lm -lpthread 
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ ./sr
+Using VNS sr stub code revised 2009-10-14 (rev 0.20)
+Loading routing table from server, clear local routing table.
+Loading routing table
+---------------------------------------------
+Destination	Gateway		Mask	Iface
+10.0.1.100		10.0.1.100	255.255.255.255	eth3
+192.168.2.2		192.168.2.2	255.255.255.255	eth1
+172.64.3.10		172.64.3.10	255.255.255.255	eth2
+---------------------------------------------
+Client mininet connecting to Server localhost:8888
+Requesting topology 0
+successfully authenticated as mininet
+Loading routing table from server, clear local routing table.
+Loading routing table
+---------------------------------------------
+Destination	Gateway		Mask	Iface
+10.0.1.100		10.0.1.100	255.255.255.255	eth3
+192.168.2.2		192.168.2.2	255.255.255.255	eth1
+172.64.3.10		172.64.3.10	255.255.255.255	eth2
+---------------------------------------------
+
+CALLTO: sr_init
+
+Router interfaces:
+eth3	HWaddrde:d4:fd:25:ce:86
+	inet addr 10.0.1.1
+eth2	HWaddrae:2d:54:df:30:8c
+	inet addr 172.64.3.1
+eth1	HWaddr5a:15:64:95:da:32
+	inet addr 192.168.2.1
+ <-- Ready to process packets --> 
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13471
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 64567
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 47687
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+dest ip: 862483557
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13471
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 47687
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13471
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 47687
+
+CALLTO: sr_send_arprequest()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13471
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 47687
+Send ARP request
+
+CALLTO: sr_send_packet()
+
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: DE:D4:FD:25:CE:86
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: DE:D4:FD:25:CE:86
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 101.116.104.51
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13472
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 64311
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 39951
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+dest ip: 862483557
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13472
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 39951
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13472
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 39951
+
+CALLTO: sr_send_arprequest()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13472
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 39951
+Send ARP request
+
+CALLTO: sr_send_packet()
+
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: DE:D4:FD:25:CE:86
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: DE:D4:FD:25:CE:86
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 101.116.104.51
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13473
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 64055
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 30969
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+dest ip: 862483557
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13473
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 30969
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13473
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 30969
+
+CALLTO: sr_send_arprequest()
+
+ETHERNET header:
+	destination: DE:D4:FD:25:CE:86
+	source: AE:AA:FB:66:74:3C
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13473
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 30969
+Send ARP request
+
+CALLTO: sr_send_packet()
+
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: DE:D4:FD:25:CE:86
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: DE:D4:FD:25:CE:86
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 101.116.104.51
+ 
+
