@@ -210,7 +210,7 @@ uint8_t * pkt = malloc(66);
 		hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
-		hdr2->ip_dst = ntohs(iphdr->ip_dst);	/* source and dest address */
+		hdr2->ip_dst = htons(iphdr->ip_dst);	/* source and dest address */
 		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 
