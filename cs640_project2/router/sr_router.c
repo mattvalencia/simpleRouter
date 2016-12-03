@@ -34,7 +34,7 @@
 
 void sr_init(struct sr_instance* sr)
 {
-	printf("CALLTO: sr_init\n");
+	printf("\nCALLTO: sr_init\n\n");
     /* REQUIRES */
     assert(sr);
 
@@ -65,7 +65,8 @@ void sr_send_arpreply(struct sr_instance *sr, uint8_t *orig_pkt,
     unsigned int orig_len, struct sr_if *src_iface)
 {
 	
-	printf("CALLTO: sr_send_arp_reply\n");
+	printf("\nCALLTO: sr_send_arp_reply\n\n");
+	print_hdrs(orig_pkt, orig_len);
   /* Allocate space for packet */
   unsigned int reply_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
   uint8_t *reply_pkt = (uint8_t *)malloc(reply_len);
@@ -102,7 +103,6 @@ void sr_send_arpreply(struct sr_instance *sr, uint8_t *orig_pkt,
 
   /* Send ARP reply */
   printf("Send ARP reply\n");
-  print_hdrs(reply_pkt, reply_len);
   sr_send_packet(sr, reply_pkt, reply_len, src_iface->name);
   free(reply_pkt);
 } /* -- sr_send_arpreply -- */
@@ -120,9 +120,11 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
 {
 	
 	printf("CALLTO: sr_send_arprequest()\n");
+	
+	print_hdrs((uint8_t *)req, (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)));
   /* Allocate space for ARP request packet */
-  unsigned int reqst_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
-  uint8_t *reqst_pkt = (uint8_t *)malloc(reqst_len);
+  unsigned int reqst_len = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t); 
+	uint8_t *reqst_pkt = (uint8_t *)malloc(reqst_len);
   if (NULL == reqst_pkt)
   {
     fprintf(stderr,"Failed to allocate space for ARP reply");
@@ -151,7 +153,6 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
 
   /* Send ARP request */
   printf("Send ARP request\n");
-  print_hdrs(reqst_pkt, reqst_len);
   sr_send_packet(sr, reqst_pkt, reqst_len, out_iface->name);
   free(reqst_pkt);
 } /* -- sr_send_arprequest -- */
@@ -167,7 +168,8 @@ void sr_send_arprequest(struct sr_instance *sr, struct sr_arpreq *req,
 void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
     struct sr_if *out_iface)
 {
-	printf("CALLTO: sr_handle_arpreq()\n");
+	printf("\nCALLTO: sr_handle_arpreq()\n\n");	
+	print_hdrs((uint8_t *)req, (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)));
 	uint8_t * pkt = malloc(66);
 	time_t now = time(NULL);
   if (difftime(now, req->sent) >= 1.0)
@@ -209,7 +211,6 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
 		hdr2->ip_dst = iphdr->ip_src;	/* source and dest address */
-		printf("\n\n ###ip dest: %u\n", hdr2->ip_dst);
 		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 
@@ -273,7 +274,8 @@ void sr_handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req,
 void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, uint32_t next_hop_ip, struct sr_if *out_iface)
 {
-	printf("CALLTO: sr_waitforarp()\n");
+	printf("\nCALLTO: sr_waitforarp()\n\n");	
+	print_hdrs(pkt, len);
     struct sr_arpreq *req = sr_arpcache_queuereq(&(sr->cache), next_hop_ip, 
             pkt, len, out_iface->name);
     sr_handle_arpreq(sr, req, out_iface);
@@ -289,7 +291,8 @@ void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
 void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, struct sr_if *src_iface)
 {
-	printf("CALLTO: sr_handlepacket_arp()\n");
+	printf("\nCALLTO: sr_handlepacket_arp()\n\n");
+	print_hdrs(pkt, len);
   /* Drop packet if it is less than the size of Ethernet and ARP headers */
   if (len < (sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t)))
   {
@@ -383,15 +386,14 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	unsigned int len, char* interface/* lent */)
 {
-	printf("CALLTO: sr_handlepacket()\n");
+	printf("\nCALLTO: sr_handlepacket()\n\n");
+	print_hdrs(packet, len);
 	/* REQUIRES */
 	assert(sr);
 	assert(packet);
 	assert(interface);
 	printf("*** -> Received packet of length %d \n", len);
 
-	printf("interface arg: %s\n", interface);	
-	print_hdrs(packet, len);
 	/************************************************************************
 	* TODO: Handle packets                                                  
 	//  ip_hdr->ip_hl * 4 (According to the CS 640 page, this is what we use to compare the IP Header in Bytes properly to see if it's too small 
@@ -497,8 +499,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 void sr_waitforarp(struct sr_instance *sr, uint8_t *pkt,
     unsigned int len, uint32_t next_hop_ip, struct sr_if *out_iface)*/
 				printf("#1\n");
-				print_hdrs(packet, len);
-					  sr_waitforarp(sr, packet, len, iphdr->ip_dst, our_interface); 
+					  sr_waitforarp(sr, packet, len, iphdr->ip_dst, our_interface);
 				  }
 			  }
 	 	}
@@ -518,14 +519,13 @@ void send_icmp(struct sr_instance* sr,
 	char* interface, /*lent*/
 	int type, int code)
 	{
-	printf("CALLTO: send_icmp()\n");
-/*	printf("rcvd packets: %u\n", packet);*/
+	printf("\nCALLTO: send_icmp()\n\n");	
+	print_hdrs(packet, len);
 	uint8_t * pkt = malloc(66);
 	sr_ethernet_hdr_t * hdr1 = (sr_ethernet_hdr_t *)pkt;
 
 	 /*Would this be how to get our addr?*/
 	struct sr_if * iface = sr_get_interface(sr, interface);
-	print_hdrs(packet, len);
 	/* Populate Ethernet header */
 	memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); /*how to find orginal source address?*/
 	memcpy(hdr1->ether_shost, iface->addr, ETHER_ADDR_LEN);   /*how do we know our interface addr?*/

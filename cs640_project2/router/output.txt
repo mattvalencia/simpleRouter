@@ -1,0 +1,303 @@
+mininet> client ping -c 3 192.168.2.2
+
+mininet@mininet-vm:~/simpleRouter/cs640_project2/router$ ./sr
+Using VNS sr stub code revised 2009-10-14 (rev 0.20)
+Loading routing table from server, clear local routing table.
+Loading routing table
+---------------------------------------------
+Destination	Gateway		Mask	Iface
+10.0.1.100		10.0.1.100	255.255.255.255	eth3
+192.168.2.2		192.168.2.2	255.255.255.255	eth1
+172.64.3.10		172.64.3.10	255.255.255.255	eth2
+---------------------------------------------
+Client mininet connecting to Server localhost:8888
+Requesting topology 0
+successfully authenticated as mininet
+Loading routing table from server, clear local routing table.
+Loading routing table
+---------------------------------------------
+Destination	Gateway		Mask	Iface
+10.0.1.100		10.0.1.100	255.255.255.255	eth3
+192.168.2.2		192.168.2.2	255.255.255.255	eth1
+172.64.3.10		172.64.3.10	255.255.255.255	eth2
+---------------------------------------------
+
+CALLTO: sr_init
+
+Router interfaces:
+eth3	HWaddrc2:76:da:b5:ed:00
+	inet addr 10.0.1.1
+eth2	HWaddr72:33:47:b9:aa:91
+	inet addr 172.64.3.1
+eth1	HWaddrfa:9b:a0:15:49:24
+	inet addr 192.168.2.1
+ <-- Ready to process packets --> 
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13819
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 41014
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 33637
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13819
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 33637
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+CALLTO: sr_send_arprequest()
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+Send ARP request
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: C2:76:DA:B5:ED:00
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: C2:76:DA:B5:ED:00
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 192.168.2.2
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: 00:00:00:00:00:00
+	source: 00:00:01:61:75:74
+	type: 26725
+Unrecognized Ethernet Type: 26725
+** Error, source address does not match interface
+*** Error: problem with ethernet header, check log
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13820
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 40758
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 32691
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13820
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 32691
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+CALLTO: sr_send_arprequest()
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+Send ARP request
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: C2:76:DA:B5:ED:00
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: C2:76:DA:B5:ED:00
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 192.168.2.2
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: 10:F4:21:01:00:00
+	source: 00:00:01:61:75:74
+	type: 26725
+Unrecognized Ethernet Type: 26725
+** Error, source address does not match interface
+*** Error: problem with ethernet header, check log
+
+CALLTO: sr_handlepacket()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13821
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 64
+	protocol: 1
+	checksum: 40502
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 33425
+*** -> Received packet of length 98 
+Ethernet type: 800
+#1
+
+CALLTO: sr_waitforarp()
+
+ETHERNET header:
+	destination: C2:76:DA:B5:ED:00
+	source: EA:C9:8F:AE:07:C1
+	type: 2048
+IP header:
+	version: 4
+	header length: 5
+	type of service: 0
+	length: 84
+	id: 13821
+	fragment flag: DF
+	fragment offset: 0
+	TTL: 63
+	protocol: 1
+	checksum: 43715
+	source: 10.0.1.100
+	destination: 192.168.2.2
+ICMP header:
+	type: 8
+	code: 0
+	checksum: 33425
+
+CALLTO: sr_handle_arpreq()
+
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+CALLTO: sr_send_arprequest()
+ETHERNET header:
+	destination: C0:A8:02:02:00:00
+	source: 00:00:00:00:00:00
+	type: 0
+Unrecognized Ethernet Type: 0
+Send ARP request
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: FF:FF:FF:FF:FF:FF
+	source: C2:76:DA:B5:ED:00
+	type: 2054
+ARP header
+	hardware type: 1
+	protocol type: 2048
+	hardware address length: 6
+	protocol address length: 4
+	opcode: 1
+	sender hardware address: C2:76:DA:B5:ED:00
+	sender ip address: 10.0.1.1
+	target hardware address: 00:00:00:00:00:00
+	target ip address: 192.168.2.2
+CALLTO: sr_send_packet()
+ETHERNET header:
+	destination: 10:F4:21:01:00:00
+	source: 00:00:01:61:75:74
+	type: 26725
+Unrecognized Ethernet Type: 26725
+** Error, source address does not match interface
+*** Error: problem with ethernet header, check log
+
+
