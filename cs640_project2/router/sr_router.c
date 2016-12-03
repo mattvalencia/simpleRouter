@@ -424,7 +424,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	  } 
 	  /*then, verify header checksum*/
 	  sr_ip_hdr_t chksum = *iphdr;
-/* memcpy(iphdr, sizeof(sr_ip_hdr_t));*/
+	  /* memcpy(iphdr, sizeof(sr_ip_hdr_t));*/
 	  chksum.ip_sum = 0;
 	  chksum.ip_sum = cksum(&chksum, sizeof(struct sr_ip_hdr));
 	  if(chksum.ip_sum != iphdr->ip_sum){
@@ -438,9 +438,9 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 	  if (iphdr->ip_dst == our_interface->ip) /*how to get our ip address?*/
 	  {
 		  sr_icmp_hdr_t *icmphdr = (sr_icmp_hdr_t *)(iphdr + sizeof(sr_ip_hdr_t));
-		sr_send_packet(sr, packet, len, interface);
 		  if (icmphdr->icmp_type == 0) /*and if an icmp echo, then respond*/
 		  {
+			printf("echo request\n");
 			  send_icmp(sr, packet, len, interface, 0, 0);
 		  }
 		  else
@@ -476,7 +476,7 @@ void sr_handlepacket(struct sr_instance* sr, uint8_t * packet/* lent */,
 				  }
 				  temp = temp->next;
 			  }
- /* if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)*/
+	 /* if !isValid => address not in table => Destination Net Unreachable (type 3, code 0)*/
 			  if (temp == NULL)
 			  {
 				  send_icmp(sr, packet, len, interface, 3, 0);
@@ -560,7 +560,6 @@ void send_icmp(struct sr_instance* sr,
 	}
 
 	hdr3->icmp_sum = cksum(hdr3, 36); /*unsure of what len should be*/
-
 	sr_send_packet(sr, pkt, 66, interface);
 	free(pkt);
 }
