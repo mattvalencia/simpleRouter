@@ -334,25 +334,25 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 
       *********************************************************************/
 		sr_ethernet_hdr_t *hdr;
-
+		sr_ethernet_hdr_t *arp_reply = pkt;
 		while (req->packets != NULL)
 		{
-			int pkt_size = sizeof(sr_ethernet_hdr_t) + req->packets->len;
 
-			uint8_t *pkt = (uint8_t *)malloc(pkt_size);
-			hdr = (sr_ethernet_hdr_t *) pkt;
+			uint8_t *pakt = (uint8_t *)malloc(req->packets->len;);
+			hdr = (sr_ethernet_hdr_t *) pakt;
 		
 			/* Populate Ethernet header */
-			memset(hdr->ether_dhost, 0xFF, ETHER_ADDR_LEN);
-			memcpy(hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
+			memset(hdr->ether_dhost, arp_reply->ether_shost, ETHER_ADDR_LEN);
+			memcpy(hdr->ether_shost, arp_reply->ether_dhost, ETHER_ADDR_LEN);
 			hdr->ether_type = htons(ethertype_ip);
 
-			memcpy(pkt + sizeof(sr_ethernet_hdr_t), req->packets->buf, req->packets->len);
+			memcpy(pakt + sizeof(sr_ethernet_hdr_t), req->packets->buf + sizeof(sr_ethernet_hdr_t),
+			       req->packets->len - sizeof(sr_ethernet_hdr_t));
 
-			sr_send_packet(sr, pkt, pkt_size, req->packets->iface);
+			sr_send_packet(sr, pkt, req->packets->len, req->packets->iface);
 			req->packets = req->packets->next;
 
-			free(pkt);
+			free(pakt);
 		}
 
 
