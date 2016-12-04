@@ -199,7 +199,7 @@ uint8_t * pkt = malloc(66);
 
 		
  		/* extract source address from IP addr */
-		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf);
+		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf) + sizeof(struct sr_ethernet_hdr);
 		iphdr->ip_dst = iphdr->ip_src;
 
 
@@ -224,7 +224,7 @@ uint8_t * pkt = malloc(66);
 
 		int i = 0;
 		for(i = 0; i < 28; i++){	
-			hdr3->data[i] = req->packets->buf[i];
+			hdr3->data[i] = req->packets->buf[i + sizeof(struct sr_ethernet_hdr)];
 		}
 
 		
