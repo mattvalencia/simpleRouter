@@ -191,7 +191,7 @@ uint8_t * pkt = malloc(66);
 		/* Populate Ethernet header */
 			
 		/* how to find orginal source address?*/
-		memset(hdr1->ether_dhost, hdr1->ether_shost, ETHER_ADDR_LEN); 
+		memcpy(hdr1->ether_dhost, hdr1->ether_shost, ETHER_ADDR_LEN); 
 		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
 		hdr1->ether_type = htons(ethertype_ip);
 
