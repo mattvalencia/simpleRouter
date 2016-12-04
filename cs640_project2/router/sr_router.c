@@ -188,19 +188,19 @@ uint8_t * pkt = malloc(66);
 
 		sr_ethernet_hdr_t *hdr1 = (sr_ethernet_hdr_t *)pkt;
 
+
+
+		/* extract source address from IP addr */
+		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf) + sizeof(struct sr_ethernet_hdr);
+		iphdr->ip_dst = iphdr->ip_src;
+
+
 		/* Populate Ethernet header */
-			
-		/* how to find orginal source address?*/
-		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN); 
+		memset(hdr1->ether_dhost, iphdr->ip_src, ETHER_ADDR_LEN);
 		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
 		hdr1->ether_type = htons(ethertype_ip);
 
 		sr_ip_hdr_t *hdr2 =(sr_ip_hdr_t *)( pkt + sizeof(struct sr_ethernet_hdr));
-
-		
- 		/* extract source address from IP addr */
-		sr_ip_hdr_t *iphdr = (sr_ip_hdr_t *)(req->packets->buf) + sizeof(struct sr_ethernet_hdr);
-		iphdr->ip_dst = iphdr->ip_src;
 
 
 		hdr2->ip_tos = 0;			/* Unknown what value needed! type of service */
@@ -343,7 +343,7 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 		
 			/* Populate Ethernet header */
 			memcpy(hdr->ether_dhost, arp_reply->ether_shost, ETHER_ADDR_LEN);
-			memcpy(hdr->ether_shost, arp_reply->ether_dhost, ETHER_ADDR_LEN);
+			memcpy(hdr->ether_shost, src_iface->ip, ETHER_ADDR_LEN);
 			hdr->ether_type = htons(ethertype_ip);
 
 			memcpy(pakt + sizeof(sr_ethernet_hdr_t), req->packets->buf + sizeof(sr_ethernet_hdr_t),
