@@ -342,7 +342,7 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 		
 			/* Populate Ethernet header */
 			memcpy(hdr->ether_dhost, arp_reply->ether_shost, ETHER_ADDR_LEN);
-			memcpy(hdr->ether_shost, src_iface->ip, ETHER_ADDR_LEN);
+			memcpy(hdr->ether_shost, arp_reply->ether_dhost, ETHER_ADDR_LEN);
 			hdr->ether_type = htons(ethertype_ip);
 
 			memcpy(pakt + sizeof(sr_ethernet_hdr_t), req->packets->buf + sizeof(sr_ethernet_hdr_t),
