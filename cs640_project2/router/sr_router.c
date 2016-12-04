@@ -210,7 +210,7 @@ uint8_t * pkt = malloc(66);
 		hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 		hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 		hdr2->ip_src = out_iface->ip;
-		hdr2->ip_dst = iphdr->ip_src;	/* source and dest address */
+		hdr2->ip_dst = ntohs(iphdr->ip_dst);	/* source and dest address */
 		hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 
@@ -347,7 +347,7 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 			memcpy(hdr->ether_shost, src_iface->addr, ETHER_ADDR_LEN);
 			hdr->ether_type = htons(ethertype_ip);
 
-			memcpy(pkt + sizeof(sr_ethernet_hdr_t), req->packets, req->packets->len);
+			memcpy(pkt + sizeof(sr_ethernet_hdr_t), req->packets->buf, req->packets->len);
 
 			sr_send_packet(sr, pkt, pkt_size, req->packets->iface);
 			req->packets = req->packets->next;
@@ -543,7 +543,7 @@ void send_icmp(struct sr_instance* sr,
 	hdr2->ip_ttl = 255;			/* time to live (how to determine?)*/
 	hdr2->ip_p = ip_protocol_icmp;			/* protocol */
 	hdr2->ip_src = iface->ip;	/*how do we know our interface ip addr?*/
-	hdr2->ip_dst =ntohs(iphdr->ip_dst);	
+	hdr2->ip_dst = ntohs(iphdr->ip_dst);	
 	hdr2->ip_sum = cksum(hdr2, 16);			/* checksum */
 
 	/*add error code*/
