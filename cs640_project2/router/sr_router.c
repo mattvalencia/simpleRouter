@@ -196,7 +196,7 @@ uint8_t * pkt = malloc(66);
 
 
 		/* Populate Ethernet header */
-		memset(hdr1->ether_dhost, iphdr->ip_src, ETHER_ADDR_LEN);
+		memset(hdr1->ether_dhost, 0xFF, ETHER_ADDR_LEN);
 		memcpy(hdr1->ether_shost, out_iface->addr, ETHER_ADDR_LEN);
 		hdr1->ether_type = htons(ethertype_ip);
 
@@ -342,7 +342,7 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 		
 			/* Populate Ethernet header */
 			memcpy(hdr->ether_dhost, arp_reply->ether_shost, ETHER_ADDR_LEN);
-			memcpy(hdr->ether_shost, arp_reply->ether_dhost, ETHER_ADDR_LEN);
+			memcpy(hdr->ether_shost, arp_reply->src_iface->addr, ETHER_ADDR_LEN);
 			hdr->ether_type = htons(ethertype_ip);
 
 			memcpy(pakt + sizeof(sr_ethernet_hdr_t), req->packets->buf + sizeof(sr_ethernet_hdr_t),
