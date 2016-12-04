@@ -202,7 +202,6 @@ uint8_t * pkt = malloc(66);
 
 		sr_ip_hdr_t *hdr2 =(sr_ip_hdr_t *)( pkt + sizeof(struct sr_ethernet_hdr));
 
-
 		hdr2->ip_tos = 0;			/* Unknown what value needed! type of service */
 		hdr2->ip_len = 54;			
 		hdr2->ip_id = 0;			/* identification */
