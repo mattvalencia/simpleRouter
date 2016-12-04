@@ -349,7 +349,7 @@ void sr_handlepacket_arp(struct sr_instance *sr, uint8_t *pkt,
 			memcpy(pakt + sizeof(sr_ethernet_hdr_t), req->packets->buf + sizeof(sr_ethernet_hdr_t),
 			       req->packets->len - sizeof(sr_ethernet_hdr_t));
 
-			sr_send_packet(sr, pkt, req->packets->len, req->packets->iface);
+			sr_send_packet(sr, pakt, req->packets->len, req->packets->iface);
 			req->packets = req->packets->next;
 
 			free(pakt);
